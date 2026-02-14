@@ -1,0 +1,10 @@
+{
+  "name": "pi-agentmail-extension",
+  "private": true,
+  "dependencies": {
+    "agentmail": "^0.2.15"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}
