@@ -28,4 +28,12 @@ link() {
 link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
 link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
 
+# Install npm dependencies for extensions that have a package.json
+for pkg in "$DOTFILES_PI"/extensions/*/package.json; do
+  [ -f "$pkg" ] || continue
+  dir="$(dirname "$pkg")"
+  echo "  Installing npm deps in $(basename "$dir")/"
+  (cd "$dir" && npm install --silent)
+done
+
 echo "Done!"
