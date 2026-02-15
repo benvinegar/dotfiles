@@ -6,7 +6,6 @@
 |----------|------|
 | `~/Projects/` | All personal repos/checkouts |
 | `~/Projects/dotfiles/` | Dotfiles repo (includes pi skills, extensions, settings) |
-| `~/Projects/hornet/` | Hornet repo checkout (bentlegen's copy) |
 | `~/Projects/openclaw/` | OpenClaw — open-source personal AI assistant |
 | `~/hornet_deprecated/` | **Old stale workspace — do not use** |
 
@@ -21,5 +20,6 @@ The production hornet agent runs under its own user. See `/skill hornet` for ful
 ## Defaults
 
 - When asked to change or fix something without specifying a project, ask which one.
-- The **modem** app is at `/home/hornet_agent/modem` (or `~/Projects/hornet/` for the hornet infra itself).
+- The **modem** app is at `/home/hornet_agent/modem`.
+- The **hornet** infra repo is only at `/home/hornet_agent/hornet/` (no bentlegen copy — use `sg hornet_agent` to access).
 - The modem website repo is at `/home/hornet_agent/website`.
