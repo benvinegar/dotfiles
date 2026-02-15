@@ -45,10 +45,10 @@ curl -s -X POST http://127.0.0.1:7890/react \
 
 Incoming Slack messages arrive with a header like:
 ```
-[Slack message from <@U09192W4XGS> in <#C07ABCDEF>]
+[Slack message from <@U09192W4XGS> in <#C07ABCDEF> thread_ts=1739581234.567890]
 ```
 
-Extract and **store both the channel ID and the message timestamp** in the todo body so you can reply to the correct thread later.
+Extract and **store the channel ID and `thread_ts`** in the todo body. Use `thread_ts` when calling `/send` to reply in the same thread.
 
 ### Slack Response Guidelines
 
