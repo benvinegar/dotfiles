@@ -20,9 +20,16 @@ export default function (pi: ExtensionAPI) {
 
     return new Promise<string | undefined>((resolve) => {
       let resolved = false;
+      // Hold a reference to the TUI `done` callback so the timeout/abort
+      // can dismiss the UI component — without this the prompt stays
+      // rendered and blocks the session even after the promise resolves.
+      let dismissUI: ((v: string | undefined) => void) | undefined;
+
       const finish = (v: string | undefined) => {
         if (resolved) return;
         resolved = true;
+        // Always dismiss the TUI component when finishing
+        dismissUI?.(v);
         resolve(v);
       };
 
@@ -38,6 +45,9 @@ export default function (pi: ExtensionAPI) {
       });
 
       ctx.ui.custom<string | undefined>((tui: any, theme: any, _kb: any, done: (v: string | undefined) => void) => {
+        // Capture done so timeout/abort can dismiss the UI
+        dismissUI = done;
+
         let password = "";
 
         const component = new Text("", 1, 1);
@@ -56,13 +66,11 @@ export default function (pi: ExtensionAPI) {
           if (data === "\r" || data === "\n") {
             clearTimeout(timer);
             const pw = password || undefined;
-            done(pw);
             finish(pw);
             return true;
           }
           if (data === "\x1b" || data === "\x03") { // Escape or Ctrl+C
             clearTimeout(timer);
-            done(undefined);
             finish(undefined);
             return true;
           }
