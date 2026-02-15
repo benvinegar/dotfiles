@@ -42,7 +42,18 @@ Before starting work, **read the project's agent guidance**:
 4. Also check for `.pi/agent/instructions.md` in the project root for pi-specific guidance
 5. Follow all project conventions for code style, testing, and verification
 
-## Startup Checklist
+## Startup
 
+When this skill is loaded, immediately run:
+
+```
+/name dev-agent
+```
+
+This sets the session name so other sessions and tools can find you.
+
+### Checklist
+
+- [ ] Set session name to `dev-agent`
 - [ ] Acknowledge role assignment from Hornet
 - [ ] Confirm access to project repo(s)
