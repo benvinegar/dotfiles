@@ -279,11 +279,8 @@ export default function (pi: ExtensionAPI) {
 				content: [
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/png",
-							data: base64,
-						},
+						mimeType: "image/png",
+						data: base64,
 					} as any,
 					{ type: "text", text: "Screenshot captured." },
 				],
