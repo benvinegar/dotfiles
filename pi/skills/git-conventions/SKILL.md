@@ -8,7 +8,7 @@ description: Git commit conventions. Always applied when making commits on behal
 When making git commits on behalf of the user, always add a co-author trailer:
 
 ```
-Co-authored-by: pi <pi@anthropic.com>
+Co-authored-by: Hornet <hornet@agentmail.to>
 ```
 
 Example:
@@ -16,5 +16,5 @@ Example:
 ```bash
 git commit -m "fix: resolve edge case in parser
 
-Co-authored-by: pi <pi@anthropic.com>"
+Co-authored-by: Hornet <hornet@agentmail.to>"
 ```
