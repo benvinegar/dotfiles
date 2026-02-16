@@ -78,7 +78,7 @@ Hornet's security is layered defense-in-depth:
 | **Timing-safe auth** | `crypto.timingSafeEqual` for secret comparison | `security.mjs` |
 | **API validation** | Type + format checking on bridge API params | `security.mjs` |
 | **Filesystem hardening** | 700 dirs, 600 secrets, runs on every boot | `harden-permissions.sh` |
-| **Network firewall** | iptables per-UID egress, allow 80/443/22/53 only | `setup-firewall.sh` |
+| **Network firewall** | iptables per-UID egress, allow 80/443/22/53 only + localhost restricted to bridge (7890), Ollama (11434), DNS (53) | `setup-firewall.sh` |
 | **Docker isolation** | Wrapper blocks --privileged, host mounts, socket mounts | `hornet-docker` |
 | **Security audit** | 24 checks, `--deep` for cross-pattern extension scanning | `security-audit.sh` |
 | **Extension scanning** | Cross-pattern static analysis (exfiltration, obfuscation, crypto-mining) | `scan-extensions.mjs` |
