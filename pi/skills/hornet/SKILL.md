@@ -1,3 +1,8 @@
+---
+name: hornet
+description: Hornet agent infrastructure — project layout, security stack, conventions, and how to run tests.
+---
+
 # Hornet Project
 
 Hornet is the agent infrastructure layer. It has its own dedicated user and workspace on this machine.

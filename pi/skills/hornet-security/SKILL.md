@@ -1,3 +1,8 @@
+---
+name: hornet-security
+description: Hornet security hardening — vulnerabilities, implementation plan, and OpenClaw reference patterns.
+---
+
 # Hornet Security Hardening
 
 > Use this skill when working on hornet security todos. Start by running `todo list` to see open items.
