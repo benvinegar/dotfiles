@@ -500,10 +500,11 @@ export default function (pi: ExtensionAPI) {
 			systemPrompt:
 				event.systemPrompt +
 				"\n\n## Web access guidelines\n" +
-				"For fetching web content (docs, articles, API responses, HTML text), use `curl` via the bash tool. " +
+				"For fetching web content (docs, articles, API responses, HTML text), try `curl` via the bash tool first. " +
 				"Examples: `curl -sL https://example.com`, `curl -s https://api.example.com/data | jq .`\n" +
 				"Only use Kernel browser tools (kernel_browser, kernel_playwright, kernel_screenshot, kernel_computer) when you need a real browser: " +
-				"visual screenshots, JS-rendered SPAs, form interactions, clicking through UIs, DOM inspection, or multi-step authenticated workflows.\n",
+				"visual screenshots, JS-rendered SPAs, form interactions, clicking through UIs, DOM inspection, or multi-step authenticated workflows.\n" +
+				"If curl fails (403, empty response, bot detection, content behind JS rendering), fall back to Kernel to fetch the content with a real browser.\n",
 		};
 	});
 
