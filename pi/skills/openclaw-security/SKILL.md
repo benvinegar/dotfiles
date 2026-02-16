@@ -189,24 +189,34 @@ Automated remediation:
 
 ## What OpenClaw Does That Hornet Doesn't (Gap Analysis)
 
-| Capability | OpenClaw | Hornet |
-|-----------|----------|--------|
-| External content wrapping with boundary markers | ✅ Production (299 lines) | ❌ None — Slack messages go straight to LLM |
-| Prompt injection detection (regex) | ✅ 12 patterns, logged | ❌ None |
-| Unicode homoglyph sanitization | ✅ Fullwidth + CJK + math brackets | ❌ None |
-| Constant-time secret comparison | ✅ `safeEqualSecret()` | ❌ Not verified |
-| Gateway auth (multi-mode) | ✅ token/password/Tailscale/trusted-proxy | ❌ No auth on bridge API (localhost:7890) |
-| Auth rate limiting | ✅ Per-IP sliding window + lockout | ❌ None |
-| Automated security audit CLI | ✅ 30+ checks, `--deep`, `--fix` | ❌ None |
-| Filesystem permission hardening | ✅ Audit + auto-fix (chmod/icacls) | ❌ `.env` is 644 |
-| Skill/extension static analysis | ✅ 7 rules, directory scanner | ❌ None |
-| Tool deny lists (HTTP surface) | ✅ Blocks session spawn/send over HTTP | ❌ N/A (no HTTP tool invoke) |
-| Docker sandboxing | ✅ Configurable modes/scope/access | ❌ None |
-| Tool profiles (allow/deny) | ✅ Named profiles + groups | ❌ None — agent has full tool access |
-| Secrets-in-config detection | ✅ Audit warns on inline secrets | ❌ Tokens in `.env` (644) |
-| Trusted proxy validation | ✅ IP allowlist + header validation | ❌ N/A |
-| Windows security support | ✅ icacls ACL inspection | ❌ N/A (Linux only) |
-| CI secret scanning | ✅ detect-secrets + baseline | ❌ None |
+> **Updated Feb 2026** — Most gaps have been closed. See `/skill hornet` for Hornet's current security stack.
+
+| Capability | OpenClaw | Hornet | Status |
+|-----------|----------|--------|--------|
+| External content wrapping with boundary markers | ✅ Production (299 lines) | ✅ `security.mjs` — same markers, same approach | **Closed** |
+| Prompt injection detection (regex) | ✅ 12 patterns, logged | ✅ 12 patterns with labels, log-only | **Closed** |
+| Unicode homoglyph sanitization | ✅ Fullwidth + CJK + math brackets | ✅ Same homoglyph map, ported from OpenClaw | **Closed** |
+| Constant-time secret comparison | ✅ `safeEqualSecret()` | ✅ Same implementation in `security.mjs` | **Closed** |
+| Gateway auth (multi-mode) | ✅ token/password/Tailscale/trusted-proxy | ⬜ Bridge API is localhost-only (no auth needed) | **N/A** |
+| Auth rate limiting | ✅ Per-IP sliding window + lockout | ✅ Per-user 5/min + API 30/min sliding window | **Closed** |
+| Automated security audit CLI | ✅ 30+ checks, `--deep`, `--fix` | ✅ 24 checks + `--deep`, no `--fix` yet | **Mostly closed** |
+| Filesystem permission hardening | ✅ Audit + auto-fix (chmod/icacls) | ✅ `harden-permissions.sh` runs on every boot, `.env` is 600 | **Closed** |
+| Skill/extension static analysis | ✅ 7 rules, directory scanner | ✅ `scan-extensions.mjs` — same rules ported from OpenClaw | **Closed** |
+| Tool deny lists (tool call level) | ✅ Blocks dangerous tools over HTTP + ACP | ✅ `tool-guard.ts` pi extension + `hornet-safe-bash` wrapper | **Closed** |
+| Docker sandboxing | ✅ Configurable modes/scope/access | ⬜ OS user isolation instead (different philosophy) | **By design** |
+| Tool profiles (allow/deny) | ✅ Named profiles + groups | ⬜ Tool-guard blocks dangerous patterns but no allow/deny profiles | **Partial** |
+| Secrets-in-config detection | ✅ Audit warns on inline secrets | ✅ Scans files, git history, session logs, stale .env copies | **Closed** |
+| Log redaction | ✅ `logging.redactSensitive` | ✅ `redact-logs.sh` scrubs on every boot | **Closed** |
+| Network firewall | ❌ Relies on OS/cloud policies | ✅ iptables per-UID egress control (Hornet is better here) | **Hornet ahead** |
+| Trusted proxy validation | ✅ IP allowlist + header validation | ⬜ N/A (no gateway/proxy concept) | **N/A** |
+| Windows security support | ✅ icacls ACL inspection | ⬜ N/A (Linux only) | **N/A** |
+| CI secret scanning | ✅ detect-secrets + baseline | ⬜ Audit-time scanning only, no CI integration | **Gap** |
+| Multi-channel security | ✅ Per-channel DM/group/slash policies | ⬜ Single channel (Slack) with simple allowlist | **Scope difference** |
+
+### Remaining gaps worth closing
+1. **Auto-fix CLI** — OpenClaw's `--fix` automatically remediates audit findings. Hornet requires manual intervention.
+2. **CI secret scanning** — OpenClaw has `detect-secrets` in CI. Hornet only scans at audit time.
+3. **Tool profiles** — OpenClaw has named profiles (minimal/coding/full) with group-based allow/deny. Hornet's tool-guard blocks dangerous patterns but can't restrict to a "minimal" tool set.
 
 ---
 
