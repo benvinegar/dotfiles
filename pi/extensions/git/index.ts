@@ -44,10 +44,13 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      // Safety check
+      const expanded = expandAliases(shellSplit(raw));
+      const expandedStr = expanded.join(" ");
+
+      // Safety check (on expanded form so aliases like `co .` get caught)
       for (const pattern of DANGEROUS) {
-        if (pattern.test(raw)) {
-          const ok = await ctx.ui.confirm("Destructive git command", `Run \`git ${raw}\`?`);
+        if (pattern.test(expandedStr)) {
+          const ok = await ctx.ui.confirm("Destructive git command", `Run \`git ${expandedStr}\`?`);
           if (!ok) {
             ctx.ui.notify("Cancelled.", "info");
             return;
@@ -56,8 +59,8 @@ export default function (pi: ExtensionAPI) {
         }
       }
 
-      // Interactive branch picker: /git co with no target
-      if (/^(checkout|co|switch)$/.test(raw)) {
+      // Interactive branch picker: /git co (or checkout/switch) with no target
+      if (expanded.length === 1 && /^(checkout|switch)$/.test(expanded[0])) {
         const result = await pi.exec("git", [
           "branch",
           "--sort=-committerdate",
@@ -82,8 +85,8 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      // Commit with editor: /git commit (no -m)
-      if (/^commit$/.test(raw) || /^commit\s+(?!.*-m)/.test(raw)) {
+      // Commit with editor: /git commit or /git ci (no -m)
+      if (expanded[0] === "commit" && !expanded.includes("-m")) {
         const diff = await pi.exec("git", ["diff", "--cached", "--stat"]);
         const staged = diff.stdout.trim();
         if (!staged) {
@@ -109,9 +112,8 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      // Passthrough — split args respecting quotes
-      const gitArgs = shellSplit(raw);
-      const result = await pi.exec("git", gitArgs);
+      // Passthrough
+      const result = await pi.exec("git", expanded);
       const output = [result.stdout, result.stderr].filter(s => s.trim()).join("\n").trim();
 
       if (output) {
@@ -123,6 +125,29 @@ export default function (pi: ExtensionAPI) {
       await updateStatus(ctx);
     },
   });
+}
+
+const ALIASES: Record<string, string[]> = {
+  co: ["checkout"],
+  ci: ["commit"],
+  br: ["branch"],
+  st: ["status"],
+  sw: ["switch"],
+  cp: ["cherry-pick"],
+  lg: ["log", "--oneline", "--graph", "--decorate"],
+  s: ["status", "--short", "--branch"],
+  d: ["diff"],
+  ds: ["diff", "--staged"],
+  ap: ["add", "-p"],
+  unstage: ["reset", "HEAD", "--"],
+  amend: ["commit", "--amend", "--no-edit"],
+};
+
+function expandAliases(args: string[]): string[] {
+  if (args.length === 0) return args;
+  const alias = ALIASES[args[0]];
+  if (alias) return [...alias, ...args.slice(1)];
+  return args;
 }
 
 /** Naive shell-style arg splitting (handles single/double quotes) */
