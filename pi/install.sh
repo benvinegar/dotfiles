@@ -28,6 +28,7 @@ link() {
 link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
 link "$DOTFILES_PI/skills" "$PI_AGENT/skills"
 link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
+link "$DOTFILES_PI/instructions.md" "$PI_AGENT/instructions.md"
 
 # Install npm dependencies for extensions that have a package.json
 for pkg in "$DOTFILES_PI"/extensions/*/package.json; do

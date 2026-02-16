@@ -13,60 +13,106 @@ Hornet is the agent infrastructure layer. It has its own dedicated user and work
 - **Home**: `/home/hornet_agent/`
 - **Group**: `hornet_agent` — `bentlegen` is a member with **group write** on the repo
 - **Repo**: `/home/hornet_agent/hornet/` (git@github.com:modem-dev/hornet.git)
-- To access hornet_agent files, use `sg hornet_agent -c "..."`
-- Git commands need: `git -c safe.directory=/home/hornet_agent/hornet` and `export HOME=/home/hornet_agent`
 - The `.pi/` and `.ssh/` dirs under hornet_agent are `drwx------` (agent-private, not group-readable)
 
 > **Note**: `~/hornet_deprecated/` under bentlegen is the old stale workspace — do not use it.
 
+### ⚠️ File Ownership — IMPORTANT
+
+You are running as `bentlegen`. **Do NOT use `Edit` or `Write` tools directly on hornet_agent files** — they will create bentlegen-owned files in hornet_agent's repo, causing mixed ownership and breaking git operations.
+
+Instead, always write to hornet_agent files via:
+```bash
+# For small edits:
+sudo -u hornet_agent tee /path/to/file > /dev/null << 'EOF'
+content here
+EOF
+
+# For commands:
+sudo -u hornet_agent bash -c '...'
+```
+
+If you accidentally create bentlegen-owned files, fix with:
+```bash
+find /home/hornet_agent/hornet -user bentlegen -exec chmod g+rwX {} +
+```
+
+### Access Patterns
+
+```bash
+# Run commands as hornet_agent
+sudo -u hornet_agent bash -c '...'
+
+# Git commands
+sudo -u hornet_agent bash -c 'cd ~/hornet && git ...'
+
+# Group-based access (alternative, less reliable)
+sg hornet_agent -c "..."
+```
+
+Git repos use `core.sharedRepository = group` so new objects get group-write perms regardless of umask.
+
 ## Structure
 
 ```
-/home/hornet_agent/hornet/
-├── README.md
-├── SECURITY.md
-├── setup.sh                # Full install script (creates user, installs deps, firewall, etc.)
-├── start.sh                # Launches control-agent (hardens perms, redacts logs, starts pi)
-├── bin/
-│   ├── security-audit.sh   # 24-check security audit (--deep for cross-pattern scan)
-│   ├── security-audit.test.sh  # 21 tests
-│   ├── scan-extensions.mjs # Node.js cross-pattern static analysis scanner
-│   ├── scan-extensions.test.mjs # 15 tests
-│   ├── harden-permissions.sh   # chmod 700/600 on pi state, secrets, logs
-│   ├── setup-firewall.sh       # iptables per-UID egress control
-│   ├── hornet-firewall.service # systemd unit for firewall persistence
-│   ├── hornet-docker           # Docker wrapper (blocks --privileged, host mounts)
-│   ├── hornet-safe-bash        # Bash wrapper (blocks rm -rf /, curl|bash, reverse shells)
-│   ├── hornet-safe-bash.test.sh # 24 tests
-│   ├── redact-logs.sh          # Secret scrubber for session logs
-│   └── redact-logs.test.sh     # 11 tests
-├── pi/
-│   ├── extensions/
-│   │   ├── tool-guard.ts       # Pi extension: intercepts dangerous tool calls before execution
-│   │   ├── tool-guard.test.mjs # 60 tests
-│   │   ├── auto-name.ts
-│   │   ├── context.ts
-│   │   ├── control.ts
-│   │   ├── files.ts
-│   │   ├── loop.ts
-│   │   ├── todos.ts
-│   │   ├── zen-provider.ts
-│   │   ├── agentmail/
-│   │   ├── email-monitor/
-│   │   └── kernel/
-│   └── skills/
-│       ├── control-agent/
-│       └── dev-agent/
-└── slack-bridge/
-    ├── bridge.mjs              # Slack ↔ pi bridge (Socket Mode, fail-closed, rate-limited)
-    ├── security.mjs            # Pure security functions (extracted for testability)
-    ├── security.test.mjs       # 71 tests
-    └── package.json
+/home/hornet_agent/
+├── hornet/                  ← agent infra repo (git@github.com:modem-dev/hornet.git)
+│   ├── README.md
+│   ├── SECURITY.md          ← 🔒 protected
+│   ├── setup.sh             ← 🔒 protected (creates user, installs deps, firewall, etc.)
+│   ├── start.sh             ← 🔒 protected (launches control-agent)
+│   ├── hooks/
+│   │   └── pre-commit       ← 🔒 protected (blocks agent from modifying security files)
+│   ├── bin/                 ← 🔒 ALL protected (security scripts)
+│   │   ├── security-audit.sh
+│   │   ├── scan-extensions.mjs
+│   │   ├── harden-permissions.sh
+│   │   ├── setup-firewall.sh
+│   │   ├── hornet-docker
+│   │   ├── hornet-safe-bash
+│   │   └── redact-logs.sh
+│   ├── pi/
+│   │   ├── extensions/
+│   │   │   ├── tool-guard.ts       ← 🔒 protected
+│   │   │   ├── tool-guard.test.mjs ← 🔒 protected
+│   │   │   ├── auto-name.ts        ← agent-modifiable
+│   │   │   ├── zen-provider.ts     ← agent-modifiable
+│   │   │   ├── sentry-monitor.ts   ← agent-modifiable
+│   │   │   └── ...
+│   │   └── skills/                  ← agent-modifiable (operational knowledge)
+│   │       ├── control-agent/
+│   │       ├── dev-agent/
+│   │       └── sentry-agent/
+│   └── slack-bridge/
+│       ├── bridge.mjs               ← agent-modifiable
+│       ├── security.mjs             ← 🔒 protected
+│       └── security.test.mjs        ← 🔒 protected
+├── workspace/
+│   ├── modem/               ← product app repo
+│   ├── website/             ← marketing site repo
+│   └── worktrees/           ← all git worktrees land here
+└── scripts/                 ← agent-authored operational scripts (separate git repo)
 ```
 
-Other repos checked out under `/home/hornet_agent/`:
-- `modem/` — product app
-- `website/` — marketing site
+🔒 = protected by root-owned pre-commit hook + tool-guard rules. Agent cannot modify.
+The hook source is in `hooks/pre-commit`, installed to `.git/hooks/pre-commit` by `setup.sh` as root-owned.
+
+## Self-Modification Guardrails
+
+3-layer defense prevents the agent from weakening its own security:
+
+| Layer | What | Bypass |
+|-------|------|--------|
+| **Pre-commit hook** | Blocks `git commit` of protected files | `--no-verify` (requires root ownership of hook to prevent agent bypass) |
+| **Tool-guard rules** | Blocks `write`/`edit` tool calls to protected paths before they hit disk | None (compiled into extension) |
+| **Skill guidance** | Skills document what is/isn't modifiable | Soft — relies on LLM compliance |
+
+**Protected files**: `bin/`, `hooks/`, `setup.sh`, `start.sh`, `SECURITY.md`, `tool-guard.ts`, `security.mjs` (and their tests).
+
+**Hook ownership**: Must be root-owned to be tamper-proof:
+```bash
+sudo chown root:root /home/hornet_agent/hornet/.git/hooks/pre-commit
+```
 
 ## Security Stack
 
@@ -74,6 +120,7 @@ Hornet's security is layered defense-in-depth:
 
 | Layer | What | File |
 |-------|------|------|
+| **Self-modification guard** | Pre-commit hook + tool-guard rules block agent from editing security files | `hooks/pre-commit`, `tool-guard.ts` |
 | **Content wrapping** | External messages wrapped with security boundaries + Unicode homoglyph sanitization | `security.mjs` |
 | **Prompt injection detection** | 12 regex patterns, log-only | `security.mjs` |
 | **Tool call interception** | Pi extension blocks dangerous bash/write/edit before execution | `tool-guard.ts` |
@@ -83,7 +130,7 @@ Hornet's security is layered defense-in-depth:
 | **Timing-safe auth** | `crypto.timingSafeEqual` for secret comparison | `security.mjs` |
 | **API validation** | Type + format checking on bridge API params | `security.mjs` |
 | **Filesystem hardening** | 700 dirs, 600 secrets, runs on every boot | `harden-permissions.sh` |
-| **Network firewall** | iptables per-UID egress, allow 80/443/22/53 only + localhost restricted to bridge (7890), Ollama (11434), DNS (53) | `setup-firewall.sh` |
+| **Network firewall** | iptables per-UID egress, allow 80/443/22/53 only + localhost restricted | `setup-firewall.sh` |
 | **Docker isolation** | Wrapper blocks --privileged, host mounts, socket mounts | `hornet-docker` |
 | **Security audit** | 24 checks, `--deep` for cross-pattern extension scanning | `security-audit.sh` |
 | **Extension scanning** | Cross-pattern static analysis (exfiltration, obfuscation, crypto-mining) | `scan-extensions.mjs` |
@@ -100,20 +147,23 @@ Hornet's security is layered defense-in-depth:
 - Security functions are extracted into testable pure-function modules (no side effects, no env vars)
 - All security code must have tests before merging
 - Run `security-audit.sh --deep` after any security-relevant changes
+- Git repos use `core.sharedRepository = group` — never change this
+- Agent commits its own operational learnings to skills; admin commits security changes with `--no-verify`
 
 ## Running Tests
 
 ```bash
 # All tests
-sg hornet_agent -c "export PATH=/home/hornet_agent/opt/node-v22.14.0-linux-x64/bin:\$PATH && \
-  cd /home/hornet_agent/hornet/slack-bridge && node --test security.test.mjs && \
-  cd /home/hornet_agent/hornet/pi/extensions && node --test tool-guard.test.mjs && \
-  cd /home/hornet_agent/hornet/bin && node --test scan-extensions.test.mjs && \
+sudo -u hornet_agent bash -c "export PATH=~/opt/node-v22.14.0-linux-x64/bin:\$PATH && \
+  cd ~/hornet/slack-bridge && node --test security.test.mjs && \
+  cd ~/hornet/pi/extensions && node --test tool-guard.test.mjs && \
+  cd ~/hornet/bin && node --test scan-extensions.test.mjs && \
   bash hornet-safe-bash.test.sh && bash redact-logs.test.sh && bash security-audit.test.sh"
 
 # Just bridge security
-sg hornet_agent -c "export PATH=...:\$PATH && cd /home/hornet_agent/hornet/slack-bridge && npm test"
+sudo -u hornet_agent bash -c "export PATH=~/opt/node-v22.14.0-linux-x64/bin:\$PATH && \
+  cd ~/hornet/slack-bridge && npm test"
 
 # Security audit (live)
-sg hornet_agent -c "cd /home/hornet_agent/hornet && bash bin/security-audit.sh --deep"
+sudo -u hornet_agent bash -c "cd ~/hornet && bash bin/security-audit.sh --deep"
 ```
