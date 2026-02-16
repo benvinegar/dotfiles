@@ -84,6 +84,7 @@ Hornet's security is layered defense-in-depth:
 | **Extension scanning** | Cross-pattern static analysis (exfiltration, obfuscation, crypto-mining) | `scan-extensions.mjs` |
 | **Secret scanning** | Scans files, git history, session logs for leaked tokens | `security-audit.sh` |
 | **Log redaction** | Scrubs API keys, tokens, private keys from session logs on boot | `redact-logs.sh` |
+| **Process isolation** | `/proc` mounted with `hidepid=2` — hornet_agent can only see its own processes | `setup.sh` |
 
 **Tests: 202 total** across 6 test files, all passing.
 
