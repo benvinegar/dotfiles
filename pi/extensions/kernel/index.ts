@@ -4,6 +4,15 @@
  * Provides tools for cloud browser automation via Kernel (kernel.sh).
  * Requires KERNEL_API_KEY environment variable.
  *
+ * IMPORTANT: Kernel is for *interactive* browser tasks only. For simple web
+ * fetching (reading docs, APIs, articles), use curl/wget via bash instead.
+ * Kernel should be reserved for tasks that require a real browser:
+ *   - Taking screenshots of rendered pages
+ *   - Interacting with SPAs / JS-heavy apps (clicking, typing, navigating)
+ *   - Inspecting DOM state, running JS in-page
+ *   - Filling forms, logging in, multi-step workflows
+ *   - Anything that needs visual rendering or JS execution
+ *
  * Tools:
  *   kernel_browser     - Create, list, and delete cloud browser sessions
  *   kernel_playwright  - Execute Playwright code against a browser
@@ -72,7 +81,7 @@ export default function (pi: ExtensionAPI) {
 		name: "kernel_browser",
 		label: "Kernel Browser",
 		description:
-			"Manage Kernel cloud browsers. Actions: create (launch a new browser), list (show active sessions), get (get session info), delete (terminate a session). After creating a browser, use kernel_playwright to automate it.",
+			"Manage Kernel cloud browsers. Actions: create (launch a new browser), list (show active sessions), get (get session info), delete (terminate a session). After creating a browser, use kernel_playwright to automate it. IMPORTANT: Only use Kernel for tasks requiring a real browser — screenshots, JS-heavy SPAs, form filling, clicking, visual inspection. For simple web fetching (reading docs, APIs, articles), use curl via bash instead.",
 		parameters: Type.Object({
 			action: StringEnum(["create", "list", "get", "delete"] as const, {
 				description: "Action to perform",
@@ -190,7 +199,7 @@ export default function (pi: ExtensionAPI) {
 		name: "kernel_playwright",
 		label: "Kernel Playwright",
 		description:
-			'Execute Playwright TypeScript code against a Kernel browser. The code runs server-side with access to `page`, `context`, and `browser` variables. Use `return` to send a value back. Example: `await page.goto("https://example.com"); return await page.title();`',
+			'Execute Playwright TypeScript code against a Kernel browser. The code runs server-side with access to `page`, `context`, and `browser` variables. Use `return` to send a value back. Example: `await page.goto("https://example.com"); return await page.title();` Only use this for interactive browser automation — DOM inspection, JS execution, clicking through SPAs, multi-step workflows. For fetching page text or API responses, use curl instead.',
 		parameters: Type.Object({
 			code: Type.String({ description: "Playwright TypeScript code to execute" }),
 			session_id: Type.Optional(
@@ -255,7 +264,7 @@ export default function (pi: ExtensionAPI) {
 		name: "kernel_screenshot",
 		label: "Kernel Screenshot",
 		description:
-			"Capture a screenshot of the current browser page. Returns the image for visual inspection.",
+			"Capture a screenshot of the current browser page. Returns the image for visual inspection. Use this when you need to see how a page renders visually.",
 		parameters: Type.Object({
 			session_id: Type.Optional(
 				Type.String({ description: "Browser session ID. Omit to use the active browser." }),
@@ -297,7 +306,7 @@ export default function (pi: ExtensionAPI) {
 		name: "kernel_computer",
 		label: "Kernel Computer",
 		description:
-			"Perform low-level computer actions on a Kernel browser: click, type, press key, scroll, move mouse, drag, or get mouse position. Use kernel_screenshot to see the result.",
+			"Perform low-level computer actions on a Kernel browser: click, type, press key, scroll, move mouse, drag, or get mouse position. Use kernel_screenshot to see the result. Only for interactive browser tasks that need direct input simulation.",
 		parameters: Type.Object({
 			action: StringEnum(
 				["click", "type", "press_key", "scroll", "move_mouse", "drag", "get_mouse_position"] as const,
@@ -481,6 +490,22 @@ export default function (pi: ExtensionAPI) {
 			ctx.ui.setStatus("kernel", undefined);
 		}
 	}
+
+	// -------------------------------------------------------------------
+	// System prompt guidance — steer away from Kernel for simple fetches
+	// -------------------------------------------------------------------
+
+	pi.on("before_agent_start", async (event) => {
+		return {
+			systemPrompt:
+				event.systemPrompt +
+				"\n\n## Web access guidelines\n" +
+				"For fetching web content (docs, articles, API responses, HTML text), use `curl` via the bash tool. " +
+				"Examples: `curl -sL https://example.com`, `curl -s https://api.example.com/data | jq .`\n" +
+				"Only use Kernel browser tools (kernel_browser, kernel_playwright, kernel_screenshot, kernel_computer) when you need a real browser: " +
+				"visual screenshots, JS-rendered SPAs, form interactions, clicking through UIs, DOM inspection, or multi-step authenticated workflows.\n",
+		};
+	});
 
 	// -------------------------------------------------------------------
 	// Cleanup on shutdown
