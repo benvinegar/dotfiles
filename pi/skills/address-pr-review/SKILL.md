@@ -1,3 +1,8 @@
+---
+name: address-pr-review
+description: Fetch PR review comments, evaluate suggestions, apply fixes when valid, reply to reviewers, then commit and push.
+---
+
 # Address PR Review Comments
 
 When activated, fetch and address pending PR review comments.
