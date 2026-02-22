@@ -183,7 +183,6 @@ function renderWidget(ctx: ExtensionContext, prs: PrRecord[]): void {
 	}
 
 	const t = ctx.ui.theme;
-	const header = t.fg("accent", `PR Tracker (${prs.length})`);
 
 	const ciBadge = (pr: PrRecord) => {
 		const progress = ciProgressFromRecord(pr);
@@ -292,7 +291,7 @@ function renderWidget(ctx: ExtensionContext, prs: PrRecord[]): void {
 		}
 	};
 
-	const lines = [header];
+	const lines: string[] = [];
 	for (const pr of prs.slice(0, MAX_TRACKED_PRS)) {
 		const prRef = t.fg("accent", `#${pr.number}`);
 		const title = pr.merge === "merged"
@@ -302,13 +301,7 @@ function renderWidget(ctx: ExtensionContext, prs: PrRecord[]): void {
 	}
 
 	ctx.ui.setWidget("pr-tracker", lines, { placement: "belowEditor" });
-
-	const openCount = prs.filter((p) => p.merge === "open" || p.merge === "draft").length;
-	const failing = prs.filter((p) => p.ci === "fail").length;
-	ctx.ui.setStatus(
-		"pr-tracker",
-		t.fg("dim", `prs ${prs.length} · open ${openCount}${failing > 0 ? ` · failing ${failing}` : ""}`),
-	);
+	ctx.ui.setStatus("pr-tracker", undefined);
 }
 
 function persistState(pi: ExtensionAPI, prs: PrRecord[]): void {
