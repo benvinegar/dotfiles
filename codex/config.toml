@@ -1,0 +1,15 @@
+plan_mode_reasoning_effort = "xhigh"
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
+notify = ["bash", "-lc", "$HOME/bin/codex-tmux-notify.sh \"$0\""]
+[projects."/home/bentlegen/Projects"]
+trust_level = "trusted"
+
+[projects."/home/bentlegen/Projects/baudbot-services-alpha"]
+trust_level = "trusted"
+
+[projects."/home/bentlegen/Projects/baudbot-beta"]
+trust_level = "trusted"
+
+[projects."/home/bentlegen/Projects/modem"]
+trust_level = "trusted"
