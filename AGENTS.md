@@ -48,6 +48,7 @@ When changing layout, update installers and docs in the same change.
 - Prefer explicit symlink logic over clever or hidden automation.
 - Preserve backup behavior when replacing existing files.
 - If a file is managed by the repo, wire it into the relevant installer.
+- If a tool mutates its own live config during normal use, prefer copying a repo-managed default instead of symlinking the live file.
 
 ### 4) Prefer boring structure over clever structure
 - Keep files grouped by tool/topic.

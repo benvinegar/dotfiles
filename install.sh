@@ -26,6 +26,28 @@ link() {
   echo "linked: $dst -> $src"
 }
 
+seed_copy() {
+  local src="$1"
+  local dst="$2"
+
+  mkdir -p "$(dirname "$dst")"
+
+  if [ -L "$dst" ]; then
+    rm -f "$dst"
+    cp "$src" "$dst"
+    echo "replaced symlink with local copy: $dst <- $src"
+    return 0
+  fi
+
+  if [ -e "$dst" ]; then
+    echo "keeping existing local file: $dst"
+    return 0
+  fi
+
+  cp "$src" "$dst"
+  echo "copied: $dst <- $src"
+}
+
 echo "Installing dotfiles links from: $DOTFILES_ROOT"
 
 # tmux
@@ -50,7 +72,8 @@ do
 done
 
 # codex
-link "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
+# Copy instead of symlink: Codex mutates its live config.toml during normal TUI use.
+seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared agent skills
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"

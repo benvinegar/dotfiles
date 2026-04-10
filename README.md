@@ -10,12 +10,14 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
-`install.sh` links:
-- `~/.tmux.conf`
-- tmux helper scripts into `~/bin/`
-- `~/.codex/config.toml`
-- shared agent skills into `~/.agents/skills`
-- shared agent skills into `~/.claude/skills`
+`install.sh` manages:
+- `~/.tmux.conf` via symlink
+- tmux helper scripts into `~/bin/` via symlink
+- `~/.codex/config.toml` via copy
+- shared agent skills into `~/.agents/skills` via symlink
+- shared agent skills into `~/.claude/skills` via symlink
+
+`~/.codex/config.toml` is intentionally **copied**, not symlinked, because Codex mutates its live config during normal TUI use.
 
 ## Repo layout
 
