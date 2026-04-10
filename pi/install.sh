@@ -2,13 +2,13 @@
 set -euo pipefail
 
 DOTFILES_PI="$(cd "$(dirname "$0")" && pwd -P)"
-DOTFILES_AGENTS="$(cd "$DOTFILES_PI/.." && pwd -P)"
+DOTFILES_ROOT="$(cd "$DOTFILES_PI/.." && pwd -P)"
 PI_AGENT="$HOME/.pi/agent"
 SHARED_AGENTS="$HOME/.agents"
 
 echo "Installing pi dotfiles..."
 echo "  Pi source: $DOTFILES_PI"
-echo "  Shared skills source: $DOTFILES_AGENTS/skills"
+echo "  Shared skills source: $DOTFILES_ROOT/skills"
 echo "  Pi target: $PI_AGENT"
 echo "  Shared skills target: $SHARED_AGENTS/skills"
 
@@ -29,7 +29,7 @@ link() {
   echo "  Linked $dst -> $src"
 }
 
-link "$DOTFILES_AGENTS/skills" "$SHARED_AGENTS/skills"
+link "$DOTFILES_ROOT/skills" "$SHARED_AGENTS/skills"
 link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
 link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
 

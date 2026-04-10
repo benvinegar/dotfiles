@@ -29,7 +29,7 @@ link() {
 echo "Installing dotfiles links from: $DOTFILES_ROOT"
 
 # tmux
-link "$DOTFILES_ROOT/.tmux.conf" "$HOME/.tmux.conf"
+link "$DOTFILES_ROOT/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 # tmux helper scripts
 mkdir -p "$HOME/bin"
@@ -45,15 +45,15 @@ for script in \
   tmux-watch-pi-turn.sh
 
 do
-  chmod 755 "$DOTFILES_ROOT/bin/$script"
-  link "$DOTFILES_ROOT/bin/$script" "$HOME/bin/$script"
+  chmod 755 "$DOTFILES_ROOT/tmux/bin/$script"
+  link "$DOTFILES_ROOT/tmux/bin/$script" "$HOME/bin/$script"
 done
 
 # codex
 link "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared agent skills
-link "$DOTFILES_ROOT/agents/skills" "$HOME/.agents/skills"
+link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
 
 cat <<'EOF'
 
@@ -63,5 +63,5 @@ Reload tmux in existing sessions:
   tmux source-file ~/.tmux.conf
 
 For pi extensions/settings:
-  ./agents/pi/install.sh
+  ./pi/install.sh
 EOF

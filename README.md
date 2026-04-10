@@ -16,16 +16,17 @@ cd ~/.dotfiles
 - `~/.codex/config.toml`
 - shared agent skills into `~/.agents/skills`
 
-## Agent layout
+## Repo layout
 
-- `agents/skills/` — shared skills for any agent that supports the common `~/.agents/skills` convention
-- `agents/pi/extensions/` — Pi-specific extensions
-- `pi -> agents/pi` — compatibility symlink for older paths
+- `tmux/` — tmux config and helper scripts
+- `pi/` — Pi-specific settings and extensions
+- `codex/` — Codex config
+- `skills/` — shared skills for any agent that supports the common `~/.agents/skills` convention
 
 ### Pi (coding agent)
 
 ```bash
-~/.dotfiles/agents/pi/install.sh
+~/.dotfiles/pi/install.sh
 ```
 
 This symlinks:
