@@ -36,6 +36,7 @@ mkdir -p "$HOME/bin"
 for script in \
   codex-tmux-notify.sh \
   tmux-agent-daemon.sh \
+  tmux-agent-overview.sh \
   tmux-agent-resync.sh \
   tmux-before-enter.sh \
   tmux-busy-spinner.sh \
@@ -51,6 +52,9 @@ done
 # codex
 link "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
+# shared agent skills
+link "$DOTFILES_ROOT/agents/skills" "$HOME/.agents/skills"
+
 cat <<'EOF'
 
 Done.
@@ -59,5 +63,5 @@ Reload tmux in existing sessions:
   tmux source-file ~/.tmux.conf
 
 For pi extensions/settings:
-  ./pi/install.sh
+  ./agents/pi/install.sh
 EOF

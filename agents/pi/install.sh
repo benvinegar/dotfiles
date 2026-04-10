@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DOTFILES_PI="$(cd "$(dirname "$0")" && pwd)"
+DOTFILES_PI="$(cd "$(dirname "$0")" && pwd -P)"
+DOTFILES_AGENTS="$(cd "$DOTFILES_PI/.." && pwd -P)"
 PI_AGENT="$HOME/.pi/agent"
+SHARED_AGENTS="$HOME/.agents"
 
 echo "Installing pi dotfiles..."
-echo "  Source: $DOTFILES_PI"
-echo "  Target: $PI_AGENT"
+echo "  Pi source: $DOTFILES_PI"
+echo "  Shared skills source: $DOTFILES_AGENTS/skills"
+echo "  Pi target: $PI_AGENT"
+echo "  Shared skills target: $SHARED_AGENTS/skills"
 
-mkdir -p "$PI_AGENT"
+mkdir -p "$PI_AGENT" "$SHARED_AGENTS"
 
 link() {
   local src="$1"
@@ -25,10 +29,13 @@ link() {
   echo "  Linked $dst -> $src"
 }
 
+link "$DOTFILES_AGENTS/skills" "$SHARED_AGENTS/skills"
 link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
-link "$DOTFILES_PI/skills" "$PI_AGENT/skills"
 link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
-link "$DOTFILES_PI/instructions.md" "$PI_AGENT/instructions.md"
+
+if [ -f "$DOTFILES_PI/instructions.md" ]; then
+  link "$DOTFILES_PI/instructions.md" "$PI_AGENT/instructions.md"
+fi
 
 # Install npm dependencies for extensions that have a package.json
 for pkg in "$DOTFILES_PI"/extensions/*/package.json; do
