@@ -2,9 +2,6 @@
   "lastChangelogVersion": "0.66.1",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.4",
-  "skills": [
-    "/home/bentlegen/Projects/hunk-c/skills"
-  ],
   "defaultThinkingLevel": "xhigh",
   "hideThinkingBlock": false,
   "packages": [
