@@ -18,11 +18,17 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+lock_file="$state_dir/resync-daemon.lock"
+
 while true; do
   if ! tmux list-panes >/dev/null 2>&1; then
     break
   fi
 
-  "${HOME}/bin/tmux-agent-resync.sh" >/dev/null 2>&1 || true
-  sleep 2
+  if command -v flock >/dev/null 2>&1; then
+    flock -n "$lock_file" "${HOME}/bin/tmux-agent-resync.sh" >/dev/null 2>&1 || true
+  else
+    "${HOME}/bin/tmux-agent-resync.sh" >/dev/null 2>&1 || true
+  fi
+  sleep 10
 done
