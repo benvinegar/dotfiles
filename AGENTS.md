@@ -20,6 +20,8 @@ Current top-level areas:
 - `codex/`
 - `skills/`
 
+`skills/` is the single repo source of truth for shared skills; installers may symlink it into multiple agent-specific discovery locations.
+
 Important entrypoints:
 - `install.sh`
 - `pi/install.sh`

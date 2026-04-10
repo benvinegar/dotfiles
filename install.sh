@@ -54,6 +54,7 @@ link "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared agent skills
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
+link "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
 
 cat <<'EOF'
 

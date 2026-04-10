@@ -15,13 +15,14 @@ cd ~/.dotfiles
 - tmux helper scripts into `~/bin/`
 - `~/.codex/config.toml`
 - shared agent skills into `~/.agents/skills`
+- shared agent skills into `~/.claude/skills`
 
 ## Repo layout
 
 - `tmux/` — tmux config and helper scripts
 - `pi/` — Pi-specific settings and extensions
 - `codex/` — Codex config
-- `skills/` — shared skills for any agent that supports the common `~/.agents/skills` convention
+- `skills/` — shared skills, with one repo source symlinked into agent-specific discovery locations like `~/.agents/skills` and `~/.claude/skills`
 
 ### Pi (coding agent)
 
@@ -30,7 +31,7 @@ cd ~/.dotfiles
 ```
 
 This symlinks:
-- shared skills into `~/.agents/skills`
+- shared skills into `~/.agents/skills` (root `install.sh` also links them into `~/.claude/skills`)
 - Pi extensions into `~/.pi/agent/extensions`
 - Pi settings into `~/.pi/agent/settings.json`
 
