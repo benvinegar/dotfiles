@@ -20,7 +20,6 @@ cd ~/.dotfiles
 
 - `agents/skills/` — shared skills for any agent that supports the common `~/.agents/skills` convention
 - `agents/pi/extensions/` — Pi-specific extensions
-- `agents/pi/skills -> ../skills` — Pi-side symlink back to the shared skill set
 - `pi -> agents/pi` — compatibility symlink for older paths
 
 ### Pi (coding agent)
