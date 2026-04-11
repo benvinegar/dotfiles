@@ -6,5 +6,6 @@
   "hideThinkingBlock": false,
   "packages": [
     "https://github.com/davebcn87/pi-autoresearch"
-  ]
+  ],
+  "theme": "tokyonight"
 }

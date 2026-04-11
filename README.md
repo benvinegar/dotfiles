@@ -92,7 +92,12 @@ Note: `LS_COLORS` / `EZA_COLORS` override the YAML theme file if you set them el
 This symlinks:
 - shared skills into `~/.agents/skills` (root `install.sh` also links them into `~/.claude/skills`)
 - Pi extensions into `~/.pi/agent/extensions`
+- Pi themes into `~/.pi/agent/themes`
 - Pi settings into `~/.pi/agent/settings.json`
+
+Current Pi theme defaults include:
+- `theme: "tokyonight"`
+- canonical theme file: `pi/themes/tokyonight.json`
 
 Auth (`auth.json`) and sessions are machine-local and not synced.
 

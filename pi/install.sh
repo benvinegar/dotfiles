@@ -9,8 +9,10 @@ SHARED_AGENTS="$HOME/.agents"
 echo "Installing pi dotfiles..."
 echo "  Pi source: $DOTFILES_PI"
 echo "  Shared skills source: $DOTFILES_ROOT/skills"
+echo "  Pi themes source: $DOTFILES_PI/themes"
 echo "  Pi target: $PI_AGENT"
 echo "  Shared skills target: $SHARED_AGENTS/skills"
+echo "  Pi themes target: $PI_AGENT/themes"
 
 mkdir -p "$PI_AGENT" "$SHARED_AGENTS"
 
@@ -31,6 +33,7 @@ link() {
 
 link "$DOTFILES_ROOT/skills" "$SHARED_AGENTS/skills"
 link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
+link "$DOTFILES_PI/themes" "$PI_AGENT/themes"
 link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
 
 if [ -f "$DOTFILES_PI/instructions.md" ]; then
