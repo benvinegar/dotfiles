@@ -48,6 +48,24 @@ seed_copy() {
   echo "copied: $dst <- $src"
 }
 
+ensure_block() {
+  local file="$1"
+  local begin_marker="$2"
+  local end_marker="$3"
+  local body="$4"
+
+  mkdir -p "$(dirname "$file")"
+  [ -e "$file" ] || touch "$file"
+
+  if grep -Fq "$begin_marker" "$file"; then
+    echo "already configured: $file"
+    return 0
+  fi
+
+  printf '\n%s\n%s\n%s\n' "$begin_marker" "$body" "$end_marker" >> "$file"
+  echo "updated: $file"
+}
+
 echo "Installing dotfiles links from: $DOTFILES_ROOT"
 
 # tmux
@@ -75,6 +93,12 @@ done
 # Copy instead of symlink: Codex mutates its live config.toml during normal TUI use.
 seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
+# shared shell config
+link "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
+shell_init='[ -f "$HOME/.config/dotfiles/shell/init.sh" ] && . "$HOME/.config/dotfiles/shell/init.sh"'
+ensure_block "$HOME/.bashrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
+ensure_block "$HOME/.zshrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
+
 # shared agent skills
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
 link "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
@@ -85,6 +109,11 @@ Done.
 
 Reload tmux in existing sessions:
   tmux source-file ~/.tmux.conf
+
+Reload your shell:
+  source ~/.bashrc
+  # or
+  source ~/.zshrc
 
 For pi extensions/settings:
   ./pi/install.sh

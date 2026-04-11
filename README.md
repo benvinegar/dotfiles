@@ -14,6 +14,8 @@ cd ~/.dotfiles
 - `~/.tmux.conf` via symlink
 - tmux helper scripts into `~/bin/` via symlink
 - `~/.codex/config.toml` via copy
+- `~/.config/dotfiles/shell` via symlink
+- shell init blocks in `~/.bashrc` and `~/.zshrc`
 - shared agent skills into `~/.agents/skills` via symlink
 - shared agent skills into `~/.claude/skills` via symlink
 
@@ -22,9 +24,29 @@ cd ~/.dotfiles
 ## Repo layout
 
 - `tmux/` — tmux config and helper scripts
+- `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
 - `pi/` — Pi-specific settings and extensions
 - `codex/` — Codex config
 - `skills/` — shared skills, with one repo source symlinked into agent-specific discovery locations like `~/.agents/skills` and `~/.claude/skills`
+
+## Shell utilities
+
+Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh via `~/.config/dotfiles/shell/init.sh`.
+
+Current defaults:
+- `ls` → `eza --group-directories-first --icons=auto`
+- `l`, `la`, `ll`, and `lt` helper aliases
+
+Install `eza` with the native package manager for each OS:
+
+- macOS:
+  ```bash
+  brew install eza
+  ```
+- Arch Linux:
+  ```bash
+  sudo pacman -S --needed eza
+  ```
 
 ### Pi (coding agent)
 
