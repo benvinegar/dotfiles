@@ -72,6 +72,10 @@ Current defaults:
 - `l`, `la`, `ll`, and `lt` helper aliases
 - `EZA_CONFIG_DIR=$HOME/.config/eza` so Linux and macOS use the same theme path
 - `~/.config/eza/theme.yml` points at the repo-managed Tokyo Night theme from `eza-community/eza-themes`
+- `cd` → `zd`, a zoxide-backed wrapper that still handles plain paths and `cd` with no args
+- `ff` → `fzf` with `bat` preview
+- `Ctrl-R` → `fzf` history search in Bash and Zsh
+- `compress` / `decompress` tar helpers
 
 Install `eza` via `./bootstrap.sh` as part of the managed package set.
 
