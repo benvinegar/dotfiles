@@ -16,6 +16,9 @@ This repo is organized by tool, with source files that get symlinked into real r
 
 Current top-level areas:
 - `tmux/`
+- `shell/`
+- `eza/`
+- `packages/`
 - `pi/`
 - `codex/`
 - `skills/`
@@ -23,11 +26,15 @@ Current top-level areas:
 `skills/` is the single repo source of truth for shared skills; installers may symlink it into multiple agent-specific discovery locations.
 
 Important entrypoints:
+- `bootstrap.sh`
+- `packages/common.txt`
 - `install.sh`
 - `pi/install.sh`
 - `README.md`
 
 When changing layout, update installers and docs in the same change.
+
+`packages/common.txt` is the canonical cross-platform terminal tool list; prefer one shared list unless package names truly diverge.
 
 ## Core rules
 
@@ -70,6 +77,7 @@ When making changes:
 Run the smallest relevant validation set.
 
 Common checks:
+- `./bootstrap.sh --dry-run`
 - `./install.sh`
 - `./pi/install.sh`
 - `tmux source-file ~/.tmux.conf` for tmux changes

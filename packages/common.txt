@@ -1,0 +1,12 @@
+# Terminal tools managed by this dotfiles repo.
+# These package names currently match on Homebrew and Arch Linux.
+# Install with: ./bootstrap.sh
+
+eza
+tmux
+bat
+fd
+ripgrep
+zoxide
+fzf
+jq

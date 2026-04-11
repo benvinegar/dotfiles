@@ -7,8 +7,14 @@ Personal configuration files, managed with symlinks.
 ```bash
 git clone git@github.com:benvinegar/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
+./bootstrap.sh
 ./install.sh
 ```
+
+`bootstrap.sh` installs terminal tools with the native package manager from one shared package list:
+- macOS: Homebrew via `brew install`
+- Arch Linux: `pacman`
+- source of truth: `packages/common.txt`
 
 `install.sh` manages:
 - `~/.tmux.conf` via symlink
@@ -27,9 +33,35 @@ cd ~/.dotfiles
 - `tmux/` — tmux config and helper scripts
 - `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
 - `eza/` — shared `eza` theme config
+- `packages/` — shared package lists used by `bootstrap.sh`
 - `pi/` — Pi-specific settings and extensions
 - `codex/` — Codex config
 - `skills/` — shared skills, with one repo source symlinked into agent-specific discovery locations like `~/.agents/skills` and `~/.claude/skills`
+
+## Package bootstrap
+
+`bootstrap.sh` is intentionally separate from `install.sh`:
+- `bootstrap.sh` installs packages
+- `install.sh` links config files and shell snippets
+
+Current managed terminal tools live in `packages/common.txt`:
+- `eza`
+- `tmux`
+- `bat`
+- `fd`
+- `ripgrep`
+- `zoxide`
+- `fzf`
+- `jq`
+
+Right now these package names match on both Homebrew and Arch, so one plain-text list is enough.
+If they ever diverge, add a small platform mapping layer instead of duplicating the whole list.
+
+Use a dry run to preview what would be installed:
+
+```bash
+./bootstrap.sh --dry-run
+```
 
 ## Shell utilities
 
@@ -41,16 +73,7 @@ Current defaults:
 - `EZA_CONFIG_DIR=$HOME/.config/eza` so Linux and macOS use the same theme path
 - `~/.config/eza/theme.yml` points at the repo-managed Tokyo Night theme from `eza-community/eza-themes`
 
-Install `eza` with the native package manager for each OS:
-
-- macOS:
-  ```bash
-  brew install eza
-  ```
-- Arch Linux:
-  ```bash
-  sudo pacman -S --needed eza
-  ```
+Install `eza` via `./bootstrap.sh` as part of the managed package set.
 
 Note: `LS_COLORS` / `EZA_COLORS` override the YAML theme file if you set them elsewhere.
 
