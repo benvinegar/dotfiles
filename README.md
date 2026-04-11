@@ -68,6 +68,8 @@ Use a dry run to preview what would be installed:
 Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh via `~/.config/dotfiles/shell/init.sh`.
 
 Current defaults:
+- `~/.local/bin`, `~/bin`, and `~/.bun/bin` are restored onto `PATH`
+- `nvm` is loaded if present so npm globals from your active nvm Node stay available
 - `ls` → `eza --group-directories-first --icons=auto`
 - `l`, `la`, `ll`, and `lt` helper aliases
 - `EZA_CONFIG_DIR=$HOME/.config/eza` so Linux and macOS use the same theme path
