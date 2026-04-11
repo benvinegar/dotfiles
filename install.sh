@@ -95,6 +95,7 @@ seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared shell config
 link "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
+link "$DOTFILES_ROOT/eza/theme.yml" "$HOME/.config/eza/theme.yml"
 shell_init='[ -f "$HOME/.config/dotfiles/shell/init.sh" ] && . "$HOME/.config/dotfiles/shell/init.sh"'
 ensure_block "$HOME/.bashrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
 ensure_block "$HOME/.zshrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"

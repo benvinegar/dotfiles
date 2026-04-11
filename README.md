@@ -15,6 +15,7 @@ cd ~/.dotfiles
 - tmux helper scripts into `~/bin/` via symlink
 - `~/.codex/config.toml` via copy
 - `~/.config/dotfiles/shell` via symlink
+- `~/.config/eza/theme.yml` via symlink
 - shell init blocks in `~/.bashrc` and `~/.zshrc`
 - shared agent skills into `~/.agents/skills` via symlink
 - shared agent skills into `~/.claude/skills` via symlink
@@ -25,6 +26,7 @@ cd ~/.dotfiles
 
 - `tmux/` — tmux config and helper scripts
 - `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
+- `eza/` — shared `eza` theme config
 - `pi/` — Pi-specific settings and extensions
 - `codex/` — Codex config
 - `skills/` — shared skills, with one repo source symlinked into agent-specific discovery locations like `~/.agents/skills` and `~/.claude/skills`
@@ -36,6 +38,8 @@ Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh vi
 Current defaults:
 - `ls` → `eza --group-directories-first --icons=auto`
 - `l`, `la`, `ll`, and `lt` helper aliases
+- `EZA_CONFIG_DIR=$HOME/.config/eza` so Linux and macOS use the same theme path
+- `~/.config/eza/theme.yml` points at the repo-managed Tokyo Night theme from `eza-community/eza-themes`
 
 Install `eza` with the native package manager for each OS:
 
@@ -47,6 +51,8 @@ Install `eza` with the native package manager for each OS:
   ```bash
   sudo pacman -S --needed eza
   ```
+
+Note: `LS_COLORS` / `EZA_COLORS` override the YAML theme file if you set them elsewhere.
 
 ### Pi (coding agent)
 
