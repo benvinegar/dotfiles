@@ -166,6 +166,53 @@
     typeset -g POWERLEVEL9K_EMPTY_LINE_RIGHT_PROMPT_FIRST_SEGMENT_START_SYMBOL='%{%}'
   fi
 
+  #################################[ machine accent ]#################################
+  # Give the os_icon segment a stable per-machine accent color.
+  # Fingerprint precedence:
+  #   1. $P10K_MACHINE_FINGERPRINT
+  #   2. /etc/machine-id or /var/lib/dbus/machine-id
+  #   3. macOS IOPlatformUUID
+  #   4. hostname / $HOST
+  # The fingerprint is hashed with `cksum` and mapped into the palette below.
+  # Set $P10K_MACHINE_COLOR to pin a specific color manually.
+  # Run `p10k-machine-colors` to preview the palette locally.
+  typeset -ga P10K_MACHINE_ACCENT_PALETTE=(
+    '#f7768e'
+    '#f78c6c'
+    '#ff9e64'
+    '#ffc777'
+    '#e0af68'
+    '#c3e88d'
+    '#9ece6a'
+    '#73daca'
+    '#4fd6be'
+    '#89ddff'
+    '#7dcfff'
+    '#7aa2f7'
+    '#6d9ef8'
+    '#bb9af7'
+    '#c099ff'
+    '#c0caf5'
+  )
+  local p10k_machine_id p10k_machine_hash p10k_machine_index p10k_machine_color
+  if [[ -n ${P10K_MACHINE_FINGERPRINT:-} ]]; then
+    p10k_machine_id=$P10K_MACHINE_FINGERPRINT
+  elif [[ -r /etc/machine-id ]]; then
+    read -r p10k_machine_id </etc/machine-id
+  elif [[ -r /var/lib/dbus/machine-id ]]; then
+    read -r p10k_machine_id </var/lib/dbus/machine-id
+  elif [[ $OSTYPE == darwin* ]] && (( $+commands[ioreg] )); then
+    p10k_machine_id=$(ioreg -rd1 -c IOPlatformExpertDevice 2>/dev/null | awk -F'"' '/IOPlatformUUID/ { print $4; exit }')
+  elif (( $+commands[hostname] )); then
+    p10k_machine_id=$(hostname 2>/dev/null)
+  else
+    p10k_machine_id=${HOST:-unknown-machine}
+  fi
+  p10k_machine_hash=$(print -nr -- "$p10k_machine_id" | cksum 2>/dev/null | awk '{print $1}')
+  [[ -n $p10k_machine_hash ]] || p10k_machine_hash=0
+  (( p10k_machine_index = (p10k_machine_hash % ${#P10K_MACHINE_ACCENT_PALETTE}) + 1 ))
+  p10k_machine_color=${P10K_MACHINE_COLOR:-$P10K_MACHINE_ACCENT_PALETTE[$p10k_machine_index]}
+
   # Default background color.
   typeset -g POWERLEVEL9K_BACKGROUND='#292e42'
 
@@ -192,8 +239,9 @@
   typeset -g POWERLEVEL9K_EMPTY_LINE_LEFT_PROMPT_LAST_SEGMENT_END_SYMBOL=
 
   #################################[ os_icon: os identifier ]##################################
-  # OS identifier color.
-  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND='#89ddff'
+  # OS identifier colors.
+  typeset -g POWERLEVEL9K_OS_ICON_BACKGROUND=$p10k_machine_color
+  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND='#1a1b26'
   # Custom icon.
   # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='⭐'
 
@@ -1735,6 +1783,39 @@
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
   (( ! $+functions[p10k] )) || p10k reload
+}
+
+function p10k-machine-colors() {
+  emulate -L zsh
+
+  local -a palette
+  if (( ${#P10K_MACHINE_ACCENT_PALETTE[@]} )); then
+    palette=("${P10K_MACHINE_ACCENT_PALETTE[@]}")
+  else
+    palette=(
+      '#f7768e'
+      '#f78c6c'
+      '#ff9e64'
+      '#ffc777'
+      '#e0af68'
+      '#c3e88d'
+      '#9ece6a'
+      '#73daca'
+      '#4fd6be'
+      '#89ddff'
+      '#7dcfff'
+      '#7aa2f7'
+      '#6d9ef8'
+      '#bb9af7'
+      '#c099ff'
+      '#c0caf5'
+    )
+  fi
+
+  local color
+  for color in "${palette[@]}"; do
+    print -P "%K{$color}%F{#1a1b26}    $color  %f%k"
+  done
 }
 
 # Tell `p10k configure` which file it should overwrite.
