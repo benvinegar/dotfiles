@@ -66,7 +66,7 @@ Override with environment variables if desired.
 - `LIMA_USER_NAME` — guest username (default current host username)
 - `LIMA_USER_UID` — guest UID (default current host UID)
 - `LIMA_USER_HOME` — guest home (default `/home/<user>.guest`)
-- `LIMA_USER_SHELL` — guest shell (default `/bin/bash`)
+- `LIMA_USER_SHELL` — guest shell (default `/usr/bin/zsh`)
 - `LIMA_SSH_PUBKEY_PATH` — Lima user public key file (default `~/.lima/_config/user.pub`)
 - `BUILDER_WORKDIR` — build workspace inside the builder VM
 

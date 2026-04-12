@@ -32,8 +32,9 @@ See `arch/lima/README.md` for details and environment overrides.
 
 `bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh core dependencies:
 - macOS: Homebrew via `brew install`
-- Arch Linux: `pacman`
+- Arch Linux: `pacman` when the shared package names exist in the current repos
 - source of truth for terminal tools: `packages/common.txt`
+- for fresh Arch machines and VMs, prefer `./arch/setup.sh`, which also filters unavailable packages
 - clones Oh My Zsh core if missing via `zsh/bootstrap.sh`
 
 `install.sh` manages:
@@ -83,15 +84,18 @@ Current managed terminal tools live in `packages/common.txt`:
 - `shellcheck`
 - `shfmt`
 
-Right now these package names match on both Homebrew and Arch, so one plain-text list is enough.
-If they ever diverge, add a small platform mapping layer instead of duplicating the whole list.
+`packages/common.txt` is the shared source of truth, but not every entry is guaranteed to exist in every package manager or repo.
+For example, `fresh` is available via Homebrew but not in the default Arch repos.
 
-For Arch-specific machine setup, `./arch/setup.sh` installs both:
+For Arch-specific machine setup, prefer `./arch/setup.sh`, which installs both:
 - `packages/common.txt`
 - `packages/arch-extra.txt`
-- skips packages that are not available in the current Arch repos
+- filters the combined package list against the current Arch repos
+- skips unavailable packages instead of failing hard
 - switches the login shell to `zsh` when available
 - configures npm global installs to use `~/.local`
+
+If package names diverge further over time, add a small platform mapping layer instead of duplicating the whole list.
 
 `packages/arch-extra.txt` currently adds:
 - `git`
