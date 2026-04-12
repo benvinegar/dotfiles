@@ -56,6 +56,7 @@ Current managed terminal tools live in `packages/common.txt`:
 - `zoxide`
 - `fzf`
 - `jq`
+- `fresh`
 
 Right now these package names match on both Homebrew and Arch, so one plain-text list is enough.
 If they ever diverge, add a small platform mapping layer instead of duplicating the whole list.
@@ -87,6 +88,7 @@ Font expectation:
 
 Current defaults:
 - `~/.local/bin`, `~/bin`, and `~/.bun/bin` are restored onto `PATH`
+- `EDITOR` / `VISUAL` default to `fresh` when the binary is installed
 - `nvm` is loaded if present so npm globals from your active nvm Node stay available
 - `ls` → `eza --group-directories-first --icons=auto`
 - `l`, `la`, `ll`, and `lt` helper aliases

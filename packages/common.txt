@@ -10,3 +10,4 @@ ripgrep
 zoxide
 fzf
 jq
+fresh
