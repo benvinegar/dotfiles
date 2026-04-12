@@ -99,7 +99,8 @@ Current defaults:
 
 Install `eza` via `./bootstrap.sh` as part of the managed package set.
 
-Note: `LS_COLORS` / `EZA_COLORS` override the YAML theme file if you set them elsewhere.
+Dotfiles wrap interactive `eza` so `theme.yml` wins even if your shell sets `LS_COLORS` or `EZA_COLORS`.
+Use `command eza ...` if you ever want the raw upstream behavior.
 
 ### Pi (coding agent)
 
