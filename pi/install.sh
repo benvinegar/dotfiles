@@ -5,6 +5,10 @@ DOTFILES_PI="$(cd "$(dirname "$0")" && pwd -P)"
 DOTFILES_ROOT="$(cd "$DOTFILES_PI/.." && pwd -P)"
 PI_AGENT="$HOME/.pi/agent"
 SHARED_AGENTS="$HOME/.agents"
+export DOTFILES_INSTALL_LOG_PREFIX='  '
+
+# shellcheck source=../scripts/lib/install-helpers.sh
+. "$DOTFILES_ROOT/scripts/lib/install-helpers.sh"
 
 echo "Installing pi dotfiles..."
 echo "  Pi source: $DOTFILES_PI"
@@ -16,28 +20,13 @@ echo "  Pi themes target: $PI_AGENT/themes"
 
 mkdir -p "$PI_AGENT" "$SHARED_AGENTS"
 
-link() {
-  local src="$1"
-  local dst="$2"
-
-  if [ -L "$dst" ]; then
-    rm "$dst"
-  elif [ -e "$dst" ]; then
-    echo "  Backing up existing $dst -> ${dst}.bak"
-    mv "$dst" "${dst}.bak"
-  fi
-
-  ln -s "$src" "$dst"
-  echo "  Linked $dst -> $src"
-}
-
-link "$DOTFILES_ROOT/skills" "$SHARED_AGENTS/skills"
-link "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
-link "$DOTFILES_PI/themes" "$PI_AGENT/themes"
-link "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
+link_path "$DOTFILES_ROOT/skills" "$SHARED_AGENTS/skills"
+link_path "$DOTFILES_PI/extensions" "$PI_AGENT/extensions"
+link_path "$DOTFILES_PI/themes" "$PI_AGENT/themes"
+link_path "$DOTFILES_PI/settings.json" "$PI_AGENT/settings.json"
 
 if [ -f "$DOTFILES_PI/instructions.md" ]; then
-  link "$DOTFILES_PI/instructions.md" "$PI_AGENT/instructions.md"
+  link_path "$DOTFILES_PI/instructions.md" "$PI_AGENT/instructions.md"
 fi
 
 # Install npm dependencies for extensions that have a package.json

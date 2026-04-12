@@ -3,50 +3,8 @@ set -euo pipefail
 
 DOTFILES_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
-link() {
-  local src="$1"
-  local dst="$2"
-
-  mkdir -p "$(dirname "$dst")"
-
-  if [ -L "$dst" ]; then
-    local current
-    current="$(readlink "$dst")"
-    if [ "$current" = "$src" ]; then
-      echo "already linked: $dst"
-      return 0
-    fi
-    rm -f "$dst"
-  elif [ -e "$dst" ]; then
-    mv "$dst" "${dst}.bak"
-    echo "backed up: $dst -> ${dst}.bak"
-  fi
-
-  ln -s "$src" "$dst"
-  echo "linked: $dst -> $src"
-}
-
-seed_copy() {
-  local src="$1"
-  local dst="$2"
-
-  mkdir -p "$(dirname "$dst")"
-
-  if [ -L "$dst" ]; then
-    rm -f "$dst"
-    cp "$src" "$dst"
-    echo "replaced symlink with local copy: $dst <- $src"
-    return 0
-  fi
-
-  if [ -e "$dst" ]; then
-    echo "keeping existing local file: $dst"
-    return 0
-  fi
-
-  cp "$src" "$dst"
-  echo "copied: $dst <- $src"
-}
+# shellcheck source=scripts/lib/install-helpers.sh
+. "$DOTFILES_ROOT/scripts/lib/install-helpers.sh"
 
 ensure_block() {
   local file="$1"
@@ -98,7 +56,7 @@ ensure_block() {
 echo "Installing dotfiles links from: $DOTFILES_ROOT"
 
 # tmux
-link "$DOTFILES_ROOT/tmux/tmux.conf" "$HOME/.tmux.conf"
+link_path "$DOTFILES_ROOT/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 # tmux helper scripts
 mkdir -p "$HOME/bin"
@@ -113,19 +71,19 @@ for script in \
   tmux-sys-stats.sh \
   tmux-watch-pi-turn.sh; do
   chmod 755 "$DOTFILES_ROOT/tmux/bin/$script"
-  link "$DOTFILES_ROOT/tmux/bin/$script" "$HOME/bin/$script"
+  link_path "$DOTFILES_ROOT/tmux/bin/$script" "$HOME/bin/$script"
 done
 
 # codex
 # Copy instead of symlink: Codex mutates its live config.toml during normal TUI use.
-seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
+seed_copy_path "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared shell config
-link "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
-link "$DOTFILES_ROOT/oh-my-zsh-custom" "$HOME/.config/dotfiles/oh-my-zsh-custom"
-link "$DOTFILES_ROOT/zsh/oh-my-zsh.zsh" "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh"
-link "$DOTFILES_ROOT/eza/theme.yml" "$HOME/.config/eza/theme.yml"
-link "$DOTFILES_ROOT/zsh/p10k.zsh" "$HOME/.p10k.zsh"
+link_path "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
+link_path "$DOTFILES_ROOT/oh-my-zsh-custom" "$HOME/.config/dotfiles/oh-my-zsh-custom"
+link_path "$DOTFILES_ROOT/zsh/oh-my-zsh.zsh" "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh"
+link_path "$DOTFILES_ROOT/eza/theme.yml" "$HOME/.config/eza/theme.yml"
+link_path "$DOTFILES_ROOT/zsh/p10k.zsh" "$HOME/.p10k.zsh"
 shell_init='[ -f "$HOME/.config/dotfiles/shell/init.sh" ] && . "$HOME/.config/dotfiles/shell/init.sh"'
 omz_init='[ -f "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh" ] && source "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh"'
 p10k_init='[ -f "$HOME/.p10k.zsh" ] && source "$HOME/.p10k.zsh"'
@@ -135,8 +93,8 @@ ensure_block "$HOME/.zshrc" "# >>> dotfiles oh-my-zsh >>>" "# <<< dotfiles oh-my
 ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" "$p10k_init"
 
 # shared agent skills
-link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
-link "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
+link_path "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
+link_path "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
 
 cat << 'EOF'
 
