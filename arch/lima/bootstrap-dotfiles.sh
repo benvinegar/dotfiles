@@ -3,11 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOTFILES_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-INSTANCE_NAME="${INSTANCE_NAME:-archlinux-arm}"
-LIMA_USER_NAME="${LIMA_USER_NAME:-$(id -un)}"
-LIMA_USER_HOME="${LIMA_USER_HOME:-/home/${LIMA_USER_NAME}.guest}"
-REMOTE_DOTFILES_PATH="${REMOTE_DOTFILES_PATH:-$LIMA_USER_HOME/.dotfiles}"
-INSTANCE_CONFIG="${LIMA_HOME:-$HOME/.lima}/$INSTANCE_NAME/lima.yaml"
+
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+lima_load_defaults
 
 command -v limactl > /dev/null 2>&1 || {
   echo "missing command: limactl" >&2

@@ -5,16 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_IMAGE_SCRIPT="$SCRIPT_DIR/build-image.sh"
 WRITE_TEMPLATE_SCRIPT="$SCRIPT_DIR/write-template.sh"
 
-INSTANCE_NAME="${INSTANCE_NAME:-archlinux-arm}"
-BUILDER_INSTANCE="${BUILDER_INSTANCE:-ubuntu-builder}"
-LIMA_USER_NAME="${LIMA_USER_NAME:-$(id -un)}"
-LIMA_USER_UID="${LIMA_USER_UID:-$(id -u)}"
-LIMA_USER_HOME="${LIMA_USER_HOME:-/home/${LIMA_USER_NAME}.guest}"
-LIMA_USER_SHELL="${LIMA_USER_SHELL:-/usr/bin/zsh}"
-ARTIFACT_DIR="${LIMA_ARTIFACT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/arch-lima}"
-IMAGE_PATH="$ARTIFACT_DIR/${INSTANCE_NAME}.qcow2"
-TEMPLATE_PATH="$ARTIFACT_DIR/${INSTANCE_NAME}.yaml"
-SSH_PUBKEY_PATH="${LIMA_SSH_PUBKEY_PATH:-$HOME/.lima/_config/user.pub}"
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+lima_load_defaults
+
+SSH_PUBKEY_PATH="$LIMA_SSH_PUBKEY_PATH"
 BUILDER_DEPS="${BUILDER_DEPS:-qemu-utils parted dosfstools e2fsprogs util-linux systemd-container curl rsync}"
 
 require() {
@@ -81,7 +76,7 @@ main() {
   echo "Building Arch Linux ARM image in $BUILDER_INSTANCE"
   limactl shell "$BUILDER_INSTANCE" -- bash -lc "chmod +x $(printf %q "$remote_build_script") && $build_cmd"
 
-  mkdir -p "$ARTIFACT_DIR"
+  mkdir -p "$LIMA_ARTIFACT_DIR"
   echo "Copying image to host: $IMAGE_PATH"
   limactl copy --backend=scp "$BUILDER_INSTANCE:$remote_image" "$IMAGE_PATH"
 

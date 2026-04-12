@@ -10,6 +10,7 @@ This directory codifies the workflow for rebuilding a **native `aarch64` Arch Li
 
 ## Files
 
+- `lib.sh` — shared Lima defaults and derived path helpers used by the other scripts
 - `build-image.sh` — build a Lima-ready Arch Linux ARM qcow2 image inside a Linux builder VM
 - `write-template.sh` — render a local Lima template YAML for the built image
 - `rebuild-vm.sh` — host orchestration script to build, copy, template, and recreate the VM

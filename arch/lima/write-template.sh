@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-INSTANCE_NAME="${INSTANCE_NAME:-archlinux-arm}"
-LIMA_USER_NAME="${LIMA_USER_NAME:-$(id -un)}"
-LIMA_USER_UID="${LIMA_USER_UID:-$(id -u)}"
-LIMA_USER_HOME="${LIMA_USER_HOME:-/home/${LIMA_USER_NAME}.guest}"
-LIMA_USER_SHELL="${LIMA_USER_SHELL:-/usr/bin/zsh}"
-ARTIFACT_DIR="${LIMA_ARTIFACT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/arch-lima}"
-IMAGE_PATH="${IMAGE_PATH:-$ARTIFACT_DIR/${INSTANCE_NAME}.qcow2}"
-OUTPUT_PATH="${OUTPUT_PATH:-$ARTIFACT_DIR/${INSTANCE_NAME}.yaml}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+lima_load_template_defaults
 
 mkdir -p "$(dirname "$OUTPUT_PATH")"
 

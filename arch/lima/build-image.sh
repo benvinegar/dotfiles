@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+lima_load_defaults
+
 ARCH_TARBALL_URL="${ARCH_TARBALL_URL:-http://de4.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz}"
 WORKDIR="${WORKDIR:-$HOME/archlinux-arm-lima-build}"
-IMG_BASENAME="${IMG_BASENAME:-archlinux-arm}"
+IMG_BASENAME="${IMG_BASENAME:-$INSTANCE_NAME}"
 IMG_SIZE="${IMG_SIZE:-12G}"
-LIMA_USER_NAME="${LIMA_USER_NAME:-$(id -un)}"
-LIMA_USER_UID="${LIMA_USER_UID:-$(id -u)}"
-LIMA_USER_HOME="${LIMA_USER_HOME:-/home/${LIMA_USER_NAME}.guest}"
-LIMA_USER_SHELL="${LIMA_USER_SHELL:-/usr/bin/zsh}"
-LIMA_SSH_PUBKEY_FILE="${LIMA_SSH_PUBKEY_FILE:-}"
+LIMA_SSH_PUBKEY_FILE="${LIMA_SSH_PUBKEY_FILE:-$LIMA_SSH_PUBKEY_PATH}"
 LIMA_SSH_PUBKEY="${LIMA_SSH_PUBKEY:-}"
 
 if [ -z "$LIMA_SSH_PUBKEY" ] && [ -n "$LIMA_SSH_PUBKEY_FILE" ] && [ -f "$LIMA_SSH_PUBKEY_FILE" ]; then
   LIMA_SSH_PUBKEY="$(tr -d '\r' < "$LIMA_SSH_PUBKEY_FILE")"
 fi
 
-if [ -z "$LIMA_SSH_PUBKEY" ] && [ -f "$HOME/.lima/_config/user.pub" ]; then
-  LIMA_SSH_PUBKEY="$(tr -d '\r' < "$HOME/.lima/_config/user.pub")"
+if [ -z "$LIMA_SSH_PUBKEY" ] && [ -f "$LIMA_SSH_PUBKEY_PATH" ]; then
+  LIMA_SSH_PUBKEY="$(tr -d '\r' < "$LIMA_SSH_PUBKEY_PATH")"
 fi
 
 if [ -z "$LIMA_SSH_PUBKEY" ]; then
