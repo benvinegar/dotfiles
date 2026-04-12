@@ -6,8 +6,12 @@ pane_pid="${2:-}"
 pane_title="${3:-}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# install.sh links tmux helper libs into ~/bin/lib for all tmux scripts.
+# Exit quietly if the install step hasn't been rerun yet.
+[ -f "$HOME/bin/lib/agent-state.sh" ] || exit 0
+
 # shellcheck source=lib/agent-state.sh
-. "$SCRIPT_DIR/lib/agent-state.sh"
+. "$HOME/bin/lib/agent-state.sh"
 
 [ -n "$pane_id" ] || exit 0
 [ -n "$pane_pid" ] || exit 0
