@@ -113,6 +113,15 @@ case "$(uname -s)" in
     ;;
 esac
 
+if [ -x "$DOTFILES_ROOT/zsh/bootstrap.sh" ]; then
+  echo
+  if [ "$DRY_RUN" -eq 1 ]; then
+    "$DOTFILES_ROOT/zsh/bootstrap.sh" --dry-run
+  else
+    "$DOTFILES_ROOT/zsh/bootstrap.sh"
+  fi
+fi
+
 cat <<'EOF'
 
 Bootstrap complete.

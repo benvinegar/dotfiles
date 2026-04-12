@@ -17,6 +17,7 @@ This repo is organized by tool, with source files that get symlinked into real r
 Current top-level areas:
 - `tmux/`
 - `shell/`
+- `zsh/`
 - `eza/`
 - `packages/`
 - `pi/`
@@ -28,6 +29,7 @@ Current top-level areas:
 Important entrypoints:
 - `bootstrap.sh`
 - `packages/common.txt`
+- `zsh/bootstrap.sh`
 - `install.sh`
 - `pi/install.sh`
 - `README.md`
@@ -78,6 +80,7 @@ Run the smallest relevant validation set.
 
 Common checks:
 - `./bootstrap.sh --dry-run`
+- `./zsh/bootstrap.sh --dry-run`
 - `./install.sh`
 - `./pi/install.sh`
 - `tmux source-file ~/.tmux.conf` for tmux changes

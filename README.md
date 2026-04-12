@@ -11,10 +11,11 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
-`bootstrap.sh` installs terminal tools with the native package manager from one shared package list:
+`bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh prompt dependencies:
 - macOS: Homebrew via `brew install`
 - Arch Linux: `pacman`
-- source of truth: `packages/common.txt`
+- source of truth for terminal tools: `packages/common.txt`
+- clones Oh My Zsh + Powerlevel10k if missing via `zsh/bootstrap.sh`
 
 `install.sh` manages:
 - `~/.tmux.conf` via symlink
@@ -22,6 +23,7 @@ cd ~/.dotfiles
 - `~/.codex/config.toml` via copy
 - `~/.config/dotfiles/shell` via symlink
 - `~/.config/eza/theme.yml` via symlink
+- `~/.p10k.zsh` via symlink
 - shell init blocks in `~/.bashrc` and `~/.zshrc`
 - shared agent skills into `~/.agents/skills` via symlink
 - shared agent skills into `~/.claude/skills` via symlink
@@ -32,6 +34,7 @@ cd ~/.dotfiles
 
 - `tmux/` — tmux config and helper scripts
 - `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
+- `zsh/` — Zsh-specific prompt config and bootstrap scripts for Oh My Zsh / Powerlevel10k
 - `eza/` — shared `eza` theme config
 - `packages/` — shared package lists used by `bootstrap.sh`
 - `pi/` — Pi-specific settings and extensions
@@ -66,6 +69,21 @@ Use a dry run to preview what would be installed:
 ## Shell utilities
 
 Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh via `~/.config/dotfiles/shell/init.sh`.
+
+## Zsh prompt
+
+`bootstrap.sh` runs `zsh/bootstrap.sh`, which:
+- clones Oh My Zsh if missing
+- clones Powerlevel10k if missing
+- seeds `~/.zshrc` from the Oh My Zsh template on fresh machines
+
+Powerlevel10k is kept as a repo-managed file at `zsh/p10k.zsh` and installed to `~/.p10k.zsh`.
+If `~/.zshrc` does not already source `~/.p10k.zsh`, `install.sh` adds a small source block.
+
+Font expectation:
+- terminal configs in this repo expect `CaskaydiaMono Nerd Font`
+- Arch package: `ttf-cascadia-mono-nerd`
+- macOS: install a compatible Caskaydia/Cascadia Nerd Font or adjust terminal font settings
 
 Current defaults:
 - `~/.local/bin`, `~/bin`, and `~/.bun/bin` are restored onto `PATH`

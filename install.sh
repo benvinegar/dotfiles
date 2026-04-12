@@ -96,9 +96,14 @@ seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 # shared shell config
 link "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
 link "$DOTFILES_ROOT/eza/theme.yml" "$HOME/.config/eza/theme.yml"
+link "$DOTFILES_ROOT/zsh/p10k.zsh" "$HOME/.p10k.zsh"
 shell_init='[ -f "$HOME/.config/dotfiles/shell/init.sh" ] && . "$HOME/.config/dotfiles/shell/init.sh"'
+p10k_init='[ -f "$HOME/.p10k.zsh" ] && source "$HOME/.p10k.zsh"'
 ensure_block "$HOME/.bashrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
 ensure_block "$HOME/.zshrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
+if ! grep -Fq '.p10k.zsh' "$HOME/.zshrc" 2>/dev/null; then
+  ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" "$p10k_init"
+fi
 
 # shared agent skills
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
