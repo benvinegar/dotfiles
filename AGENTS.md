@@ -15,9 +15,11 @@ Maintain a small, understandable, symlink-based dotfiles repo that is:
 This repo is organized by tool, with source files that get symlinked into real runtime locations.
 
 Current top-level areas:
+- `arch/`
 - `tmux/`
 - `shell/`
 - `zsh/`
+- `oh-my-zsh-custom/`
 - `eza/`
 - `packages/`
 - `pi/`
@@ -28,8 +30,13 @@ Current top-level areas:
 
 Important entrypoints:
 - `bootstrap.sh`
+- `arch/setup.sh`
 - `packages/common.txt`
+- `packages/arch-extra.txt`
 - `zsh/bootstrap.sh`
+- `zsh/oh-my-zsh.zsh`
+- `zsh/p10k.zsh`
+- `oh-my-zsh-custom/`
 - `install.sh`
 - `pi/install.sh`
 - `README.md`
@@ -57,6 +64,7 @@ When changing layout, update installers and docs in the same change.
 - Prefer explicit symlink logic over clever or hidden automation.
 - Preserve backup behavior when replacing existing files.
 - If a file is managed by the repo, wire it into the relevant installer.
+- Prefer managed marker blocks in user rc files over replacing the entire file when host tools may add their own content.
 - If a tool mutates its own live config during normal use, prefer copying a repo-managed default instead of symlinking the live file.
 
 ### 4) Prefer boring structure over clever structure

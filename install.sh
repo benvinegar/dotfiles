@@ -53,16 +53,45 @@ ensure_block() {
   local begin_marker="$2"
   local end_marker="$3"
   local body="$4"
+  local tmp replaced in_block
 
   mkdir -p "$(dirname "$file")"
   [ -e "$file" ] || touch "$file"
 
-  if grep -Fq "$begin_marker" "$file"; then
+  tmp="$(mktemp)"
+  replaced=0
+  in_block=0
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ "$in_block" -eq 0 ] && [ "$line" = "$begin_marker" ]; then
+      printf '%s\n%s\n%s\n' "$begin_marker" "$body" "$end_marker" >> "$tmp"
+      replaced=1
+      in_block=1
+      continue
+    fi
+
+    if [ "$in_block" -eq 1 ]; then
+      if [ "$line" = "$end_marker" ]; then
+        in_block=0
+      fi
+      continue
+    fi
+
+    printf '%s\n' "$line" >> "$tmp"
+  done < "$file"
+
+  if [ "$replaced" -eq 0 ]; then
+    [ -s "$tmp" ] && printf '\n' >> "$tmp"
+    printf '%s\n%s\n%s\n' "$begin_marker" "$body" "$end_marker" >> "$tmp"
+  fi
+
+  if cmp -s "$file" "$tmp"; then
+    rm -f "$tmp"
     echo "already configured: $file"
     return 0
   fi
 
-  printf '\n%s\n%s\n%s\n' "$begin_marker" "$body" "$end_marker" >> "$file"
+  mv "$tmp" "$file"
   echo "updated: $file"
 }
 
@@ -95,15 +124,17 @@ seed_copy "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
 # shared shell config
 link "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
+link "$DOTFILES_ROOT/oh-my-zsh-custom" "$HOME/.config/dotfiles/oh-my-zsh-custom"
+link "$DOTFILES_ROOT/zsh/oh-my-zsh.zsh" "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh"
 link "$DOTFILES_ROOT/eza/theme.yml" "$HOME/.config/eza/theme.yml"
 link "$DOTFILES_ROOT/zsh/p10k.zsh" "$HOME/.p10k.zsh"
 shell_init='[ -f "$HOME/.config/dotfiles/shell/init.sh" ] && . "$HOME/.config/dotfiles/shell/init.sh"'
+omz_init='[ -f "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh" ] && source "$HOME/.config/dotfiles/zsh/oh-my-zsh.zsh"'
 p10k_init='[ -f "$HOME/.p10k.zsh" ] && source "$HOME/.p10k.zsh"'
 ensure_block "$HOME/.bashrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
 ensure_block "$HOME/.zshrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shell init <<<" "$shell_init"
-if ! grep -Fq '.p10k.zsh' "$HOME/.zshrc" 2>/dev/null; then
-  ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" "$p10k_init"
-fi
+ensure_block "$HOME/.zshrc" "# >>> dotfiles oh-my-zsh >>>" "# <<< dotfiles oh-my-zsh <<<" "$omz_init"
+ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" "$p10k_init"
 
 # shared agent skills
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
@@ -116,10 +147,12 @@ Done.
 Reload tmux in existing sessions:
   tmux source-file ~/.tmux.conf
 
-Reload your shell:
-  source ~/.bashrc
-  # or
-  source ~/.zshrc
+Reload your current shell:
+  bash -> source ~/.bashrc
+  zsh  -> source ~/.zshrc
+
+Or start a fresh zsh session:
+  exec zsh
 
 For pi extensions/settings:
   ./pi/install.sh

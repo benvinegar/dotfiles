@@ -11,20 +11,31 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
-`bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh prompt dependencies:
+On Arch Linux, there is also a convenience setup entrypoint for VMs and fresh Linux installs:
+
+```bash
+git clone git@github.com:benvinegar/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./arch/setup.sh
+./install.sh
+```
+
+`bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh core dependencies:
 - macOS: Homebrew via `brew install`
 - Arch Linux: `pacman`
 - source of truth for terminal tools: `packages/common.txt`
-- clones Oh My Zsh + Powerlevel10k if missing via `zsh/bootstrap.sh`
+- clones Oh My Zsh core if missing via `zsh/bootstrap.sh`
 
 `install.sh` manages:
 - `~/.tmux.conf` via symlink
 - tmux helper scripts into `~/bin/` via symlink
 - `~/.codex/config.toml` via copy
 - `~/.config/dotfiles/shell` via symlink
+- `~/.config/dotfiles/oh-my-zsh-custom` via symlink
+- `~/.config/dotfiles/zsh/oh-my-zsh.zsh` via symlink
 - `~/.config/eza/theme.yml` via symlink
 - `~/.p10k.zsh` via symlink
-- shell init blocks in `~/.bashrc` and `~/.zshrc`
+- managed shell/Oh My Zsh/p10k blocks in `~/.bashrc` and `~/.zshrc`
 - shared agent skills into `~/.agents/skills` via symlink
 - shared agent skills into `~/.claude/skills` via symlink
 
@@ -32,11 +43,13 @@ cd ~/.dotfiles
 
 ## Repo layout
 
+- `arch/` — Arch Linux convenience setup entrypoints for fresh VMs and installs
 - `tmux/` — tmux config and helper scripts
 - `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
-- `zsh/` — Zsh-specific prompt config and bootstrap scripts for Oh My Zsh / Powerlevel10k
+- `zsh/` — Zsh-specific bootstrap and prompt wiring files such as `p10k.zsh` and `oh-my-zsh.zsh`
+- `oh-my-zsh-custom/` — repo-managed Oh My Zsh custom themes/plugins used by installed `~/.zshrc`
 - `eza/` — shared `eza` theme config
-- `packages/` — shared package lists used by `bootstrap.sh`
+- `packages/` — shared package lists used by `bootstrap.sh` and `arch/setup.sh`
 - `pi/` — Pi-specific settings and extensions
 - `codex/` — Codex config
 - `skills/` — shared skills, with one repo source symlinked into agent-specific discovery locations like `~/.agents/skills` and `~/.claude/skills`
@@ -61,10 +74,31 @@ Current managed terminal tools live in `packages/common.txt`:
 Right now these package names match on both Homebrew and Arch, so one plain-text list is enough.
 If they ever diverge, add a small platform mapping layer instead of duplicating the whole list.
 
+For Arch-specific machine setup, `./arch/setup.sh` installs both:
+- `packages/common.txt`
+- `packages/arch-extra.txt`
+- switches the login shell to `zsh` when available
+- configures npm global installs to use `~/.local`
+
+`packages/arch-extra.txt` currently adds:
+- `git`
+- `zsh`
+- `openssh`
+- `curl`
+- `rsync`
+- `unzip`
+- `zip`
+- `base-devel`
+- `github-cli`
+- `nodejs`
+- `npm`
+- `ttf-cascadia-mono-nerd`
+
 Use a dry run to preview what would be installed:
 
 ```bash
 ./bootstrap.sh --dry-run
+./arch/setup.sh --dry-run
 ```
 
 ## Shell utilities
@@ -74,12 +108,15 @@ Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh vi
 ## Zsh prompt
 
 `bootstrap.sh` runs `zsh/bootstrap.sh`, which:
-- clones Oh My Zsh if missing
-- clones Powerlevel10k if missing
-- seeds `~/.zshrc` from the Oh My Zsh template on fresh machines
+- clones Oh My Zsh core if missing
+- does not clone repo-managed themes/plugins
 
-Powerlevel10k is kept as a repo-managed file at `zsh/p10k.zsh` and installed to `~/.p10k.zsh`.
-If `~/.zshrc` does not already source `~/.p10k.zsh`, `install.sh` adds a small source block.
+Repo-managed Zsh sources of truth are:
+- `zsh/oh-my-zsh.zsh` — portable Oh My Zsh load block
+- `oh-my-zsh-custom/` — vendored custom themes/plugins
+- `zsh/p10k.zsh` — Powerlevel10k config
+
+`install.sh` wires `~/.zshrc` to source `zsh/oh-my-zsh.zsh` and `~/.p10k.zsh` via managed marker blocks, rather than installing a full repo-managed `~/.zshrc`.
 
 Font expectation:
 - terminal configs in this repo expect `CaskaydiaMono Nerd Font`
@@ -87,6 +124,8 @@ Font expectation:
 - macOS: install a compatible Caskaydia/Cascadia Nerd Font or adjust terminal font settings
 
 Current defaults:
+- `zsh` is the expected interactive shell on Arch setups bootstrapped with `./arch/setup.sh`
+- npm global installs land under `~/.local` so `npm i -g ...` works without `sudo`
 - `~/.local/bin`, `~/bin`, and `~/.bun/bin` are restored onto `PATH`
 - `EDITOR` / `VISUAL` default to `fresh` when the binary is installed
 - `nvm` is loaded if present so npm globals from your active nvm Node stay available

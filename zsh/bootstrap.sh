@@ -2,18 +2,15 @@
 set -euo pipefail
 
 OH_MY_ZSH_DIR="${ZSH:-$HOME/.oh-my-zsh}"
-ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$OH_MY_ZSH_DIR/custom}"
-P10K_DIR="$ZSH_CUSTOM_DIR/themes/powerlevel10k"
 DRY_RUN=0
 
 usage() {
   cat <<'EOF'
 Usage: ./zsh/bootstrap.sh [--dry-run]
 
-Bootstrap Zsh prompt dependencies used by this dotfiles repo.
-- Clones Oh My Zsh if missing
-- Clones Powerlevel10k if missing
-- Seeds ~/.zshrc from the Oh My Zsh template on fresh machines
+Bootstrap Zsh dependencies used by this dotfiles repo.
+- Clones Oh My Zsh core if missing
+- Repo-managed themes/plugins are wired later by install.sh
 
 Options:
   --dry-run   Print what would happen without changing anything
@@ -58,36 +55,6 @@ ensure_repo() {
   run git clone --depth=1 "$repo" "$dst"
 }
 
-seed_zshrc() {
-  local template="$OH_MY_ZSH_DIR/templates/zshrc.zsh-template"
-  local dst="$HOME/.zshrc"
-  local tmp
-
-  if [ -e "$dst" ]; then
-    echo "keeping existing $dst"
-    if ! grep -Fq 'powerlevel10k/powerlevel10k' "$dst" 2>/dev/null; then
-      echo "note: $dst does not appear to load powerlevel10k; adjust it manually if needed"
-    fi
-    return 0
-  fi
-
-  if [ ! -f "$template" ]; then
-    echo "warning: missing Oh My Zsh template: $template" >&2
-    return 0
-  fi
-
-  if [ "$DRY_RUN" -eq 1 ]; then
-    printf '+ sed %q > %q\n' 's|^ZSH_THEME=.*|ZSH_THEME="powerlevel10k/powerlevel10k"|' "$dst"
-    echo "would seed $dst from the Oh My Zsh template"
-    return 0
-  fi
-
-  tmp="$(mktemp)"
-  sed 's|^ZSH_THEME=.*|ZSH_THEME="powerlevel10k/powerlevel10k"|' "$template" > "$tmp"
-  mv "$tmp" "$dst"
-  echo "seeded $dst from the Oh My Zsh template"
-}
-
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --dry-run)
@@ -107,19 +74,23 @@ while [ "$#" -gt 0 ]; do
 done
 
 if ! command -v zsh >/dev/null 2>&1; then
-  echo "warning: zsh not found; skipping Oh My Zsh / Powerlevel10k bootstrap"
+  echo "warning: zsh not found; skipping Oh My Zsh bootstrap"
   exit 0
 fi
 
 if ! command -v git >/dev/null 2>&1; then
-  echo "error: git is required to bootstrap Oh My Zsh / Powerlevel10k" >&2
+  echo "error: git is required to bootstrap Oh My Zsh" >&2
   exit 1
 fi
 
-echo "Bootstrapping Zsh prompt dependencies..."
+echo "Bootstrapping Zsh dependencies..."
 ensure_repo "Oh My Zsh" "https://github.com/ohmyzsh/ohmyzsh.git" "$OH_MY_ZSH_DIR"
-ensure_repo "Powerlevel10k" "https://github.com/romkatv/powerlevel10k.git" "$P10K_DIR"
-seed_zshrc
+
+cat <<'EOF'
+
+Install note:
+  Run ./install.sh to wire the repo-managed Oh My Zsh custom dir and ~/.p10k.zsh.
+EOF
 
 cat <<'EOF'
 

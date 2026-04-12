@@ -1,0 +1,15 @@
+# Arch-only packages layered on top of packages/common.txt.
+# Install with: ./arch/setup.sh
+
+git
+zsh
+openssh
+curl
+rsync
+unzip
+zip
+base-devel
+github-cli
+nodejs
+npm
+ttf-cascadia-mono-nerd
