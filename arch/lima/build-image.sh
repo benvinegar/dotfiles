@@ -8,7 +8,7 @@ IMG_SIZE="${IMG_SIZE:-12G}"
 LIMA_USER_NAME="${LIMA_USER_NAME:-$(id -un)}"
 LIMA_USER_UID="${LIMA_USER_UID:-$(id -u)}"
 LIMA_USER_HOME="${LIMA_USER_HOME:-/home/${LIMA_USER_NAME}.guest}"
-LIMA_USER_SHELL="${LIMA_USER_SHELL:-/bin/bash}"
+LIMA_USER_SHELL="${LIMA_USER_SHELL:-/usr/bin/zsh}"
 LIMA_SSH_PUBKEY_FILE="${LIMA_SSH_PUBKEY_FILE:-}"
 LIMA_SSH_PUBKEY="${LIMA_SSH_PUBKEY:-}"
 
@@ -137,7 +137,7 @@ sudo chroot "$ROOT" /bin/bash -lc '
   systemd-sysusers
   pacman-key --init
   pacman-key --populate archlinuxarm
-  pacman -Sy --noconfirm sudo openssh cloud-init cloud-guest-utils
+  pacman -Sy --noconfirm sudo openssh zsh cloud-init cloud-guest-utils
   systemd-sysusers
 '
 

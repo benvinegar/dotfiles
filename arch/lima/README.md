@@ -6,6 +6,7 @@ This directory codifies the workflow for rebuilding a **native `aarch64` Arch Li
 - isolated guest filesystem (`mounts: []`)
 - Lima guest agent + readiness working
 - dotfiles bootstrap from this repo
+- `zsh` as the Lima shell after bootstrap
 
 ## Files
 
@@ -43,6 +44,8 @@ This copies the repo into the guest as `~/.dotfiles` and runs:
 ./install.sh
 ```
 
+It also updates the instance config and restarts the VM if needed so `limactl shell <instance>` opens `zsh` instead of `bash`.
+
 ## Default local artifact locations
 
 These scripts intentionally write large machine-local artifacts **outside the git repo**.
@@ -78,5 +81,6 @@ INSTANCE_NAME=archlinux-arm \
 ## Notes
 
 - The VM is Lima-ready because the baked image includes `cloud-init` + `cloud-guest-utils` and is configured for the `NoCloud` datasource with fs label `cidata`.
+- The baked image also includes `zsh`, and the rendered template defaults the Lima user shell to `/usr/bin/zsh`.
 - The rendered template disables Lima-managed containerd for now because rootless containerd setup was a source of noisy startup failures during debugging.
 - `cloud-init status --long` may still report `degraded done` because Lima's generated cloud-config currently uses deprecated fields, but the VM is functionally ready when Lima reports `READY` and the guest agent is active.

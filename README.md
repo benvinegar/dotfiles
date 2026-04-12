@@ -27,6 +27,7 @@ On macOS Apple Silicon, this repo also includes a reproducible native Arch Linux
 ~/.dotfiles/arch/lima/bootstrap-dotfiles.sh
 ```
 
+That workflow builds a Lima-ready Arch Linux ARM image, recreates the VM, bootstraps dotfiles, and makes `limactl shell` open `zsh`.
 See `arch/lima/README.md` for details and environment overrides.
 
 `bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh core dependencies:
