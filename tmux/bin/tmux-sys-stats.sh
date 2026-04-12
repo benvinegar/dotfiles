@@ -23,7 +23,7 @@ printf '%s %s\n' "$total" "$idle_all" > "$cpu_state_file"
 total_delta=$((total - prev_total))
 idle_delta=$((idle_all - prev_idle))
 if [ "$total_delta" -gt 0 ]; then
-  cpu_pct=$(( (1000 * (total_delta - idle_delta) / total_delta + 5) / 10 ))
+  cpu_pct=$(((1000 * (total_delta - idle_delta) / total_delta + 5) / 10))
 else
   cpu_pct=0
 fi
@@ -32,7 +32,7 @@ fi
 mem_total_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
 mem_available_kb=$(awk '/^MemAvailable:/ { print $2 }' /proc/meminfo)
 mem_used_kb=$((mem_total_kb - mem_available_kb))
-mem_pct=$(( (100 * mem_used_kb + mem_total_kb / 2) / mem_total_kb ))
+mem_pct=$(((100 * mem_used_kb + mem_total_kb / 2) / mem_total_kb))
 
 mem_used_gib=$(awk -v kb="$mem_used_kb" 'BEGIN { printf "%.1f", kb/1048576 }')
 mem_total_gib=$(awk -v kb="$mem_total_kb" 'BEGIN { printf "%.1f", kb/1048576 }')
@@ -46,8 +46,8 @@ disk_pct=$(df -P / | awk 'NR==2 { gsub(/%/, "", $5); print $5 }')
 # --- Uptime ---
 up_secs=$(awk '{print int($1)}' /proc/uptime)
 up_days=$((up_secs / 86400))
-up_hours=$(( (up_secs % 86400) / 3600 ))
-up_mins=$(( (up_secs % 3600) / 60 ))
+up_hours=$(((up_secs % 86400) / 3600))
+up_mins=$(((up_secs % 3600) / 60))
 
 if [ "$up_days" -gt 0 ]; then
   uptime_text="${up_days}d${up_hours}h"

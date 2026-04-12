@@ -5,5 +5,5 @@ set -euo pipefail
 # Called every status refresh (~1s) when an agent is busy.
 frames=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
 now="$(date +%s)"
-idx=$(( now % ${#frames[@]} ))
+idx=$((now % ${#frames[@]}))
 printf '%s' "${frames[$idx]}"

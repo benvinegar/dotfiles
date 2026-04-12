@@ -2,10 +2,10 @@
 
 case $- in
   *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
+  *) return 0 2> /dev/null || exit 0 ;;
 esac
 
-command -v zoxide >/dev/null 2>&1 || return 0 2>/dev/null || exit 0
+command -v zoxide > /dev/null 2>&1 || return 0 2> /dev/null || exit 0
 
 if [ -n "${ZSH_VERSION:-}" ]; then
   eval "$(zoxide init zsh)"
@@ -17,7 +17,7 @@ zd() {
   if [ "$#" -eq 0 ]; then
     builtin cd ~ && return
   elif [ -d "$1" ]; then
-    builtin cd "$@"
+    builtin cd "$@" || return
   else
     z "$@" && pwd || echo "Error: Directory not found"
   fi

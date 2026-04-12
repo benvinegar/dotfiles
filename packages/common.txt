@@ -11,3 +11,5 @@ zoxide
 fzf
 jq
 fresh
+shellcheck
+shfmt

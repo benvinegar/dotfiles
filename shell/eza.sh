@@ -2,10 +2,10 @@
 
 case $- in
   *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
+  *) return 0 2> /dev/null || exit 0 ;;
 esac
 
-command -v eza >/dev/null 2>&1 || return 0 2>/dev/null || exit 0
+command -v eza > /dev/null 2>&1 || return 0 2> /dev/null || exit 0
 
 export EZA_CONFIG_DIR="${EZA_CONFIG_DIR:-$HOME/.config/eza}"
 

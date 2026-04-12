@@ -5,7 +5,7 @@ OH_MY_ZSH_DIR="${ZSH:-$HOME/.oh-my-zsh}"
 DRY_RUN=0
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: ./zsh/bootstrap.sh [--dry-run]
 
 Bootstrap Zsh dependencies used by this dotfiles repo.
@@ -60,7 +60,7 @@ while [ "$#" -gt 0 ]; do
     --dry-run)
       DRY_RUN=1
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -73,12 +73,12 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-if ! command -v zsh >/dev/null 2>&1; then
+if ! command -v zsh > /dev/null 2>&1; then
   echo "warning: zsh not found; skipping Oh My Zsh bootstrap"
   exit 0
 fi
 
-if ! command -v git >/dev/null 2>&1; then
+if ! command -v git > /dev/null 2>&1; then
   echo "error: git is required to bootstrap Oh My Zsh" >&2
   exit 1
 fi
@@ -86,13 +86,13 @@ fi
 echo "Bootstrapping Zsh dependencies..."
 ensure_repo "Oh My Zsh" "https://github.com/ohmyzsh/ohmyzsh.git" "$OH_MY_ZSH_DIR"
 
-cat <<'EOF'
+cat << 'EOF'
 
 Install note:
   Run ./install.sh to wire the repo-managed Oh My Zsh custom dir and ~/.p10k.zsh.
 EOF
 
-cat <<'EOF'
+cat << 'EOF'
 
 Font note:
   Terminal configs in this repo expect CaskaydiaMono Nerd Font.

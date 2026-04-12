@@ -6,7 +6,7 @@ PACKAGES_FILE="$DOTFILES_ROOT/packages/common.txt"
 DRY_RUN=0
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: ./bootstrap.sh [--dry-run]
 
 Install terminal tools managed by this dotfiles repo.
@@ -41,7 +41,7 @@ install_arch() {
   local package
   local -a packages=()
 
-  if ! command -v pacman >/dev/null 2>&1; then
+  if ! command -v pacman > /dev/null 2>&1; then
     echo "error: pacman not found; this bootstrap currently supports Arch Linux on Linux." >&2
     exit 1
   fi
@@ -63,7 +63,7 @@ install_macos() {
   local package
   local -a packages=()
 
-  if ! command -v brew >/dev/null 2>&1; then
+  if ! command -v brew > /dev/null 2>&1; then
     echo "error: Homebrew is required on macOS before running bootstrap.sh" >&2
     echo "Install it from https://brew.sh and rerun this script." >&2
     exit 1
@@ -87,7 +87,7 @@ while [ "$#" -gt 0 ]; do
     --dry-run)
       DRY_RUN=1
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -122,7 +122,7 @@ if [ -x "$DOTFILES_ROOT/zsh/bootstrap.sh" ]; then
   fi
 fi
 
-cat <<'EOF'
+cat << 'EOF'
 
 Bootstrap complete.
 

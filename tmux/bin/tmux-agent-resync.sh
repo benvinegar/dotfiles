@@ -10,7 +10,7 @@ if [ "${1:-}" != "" ] && [ "${2:-}" != "" ]; then
 fi
 
 # Full resync across all panes.
-tmux list-panes -a -F '#{pane_id} #{pane_pid} #{pane_title}' |
-  while read -r pane pid title; do
+tmux list-panes -a -F '#{pane_id} #{pane_pid} #{pane_title}' \
+  | while read -r pane pid title; do
     "$detector" "$pane" "$pid" "$title"
   done

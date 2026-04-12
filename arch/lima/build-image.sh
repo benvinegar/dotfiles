@@ -34,7 +34,7 @@ LOOPDEV=""
 cleanup() {
   set +e
 
-  sudo pkill -f "$ROOT/etc/pacman.d/gnupg" >/dev/null 2>&1 || true
+  sudo pkill -f "$ROOT/etc/pacman.d/gnupg" > /dev/null 2>&1 || true
 
   if mountpoint -q "$ROOT/dev"; then sudo umount -l "$ROOT/dev"; fi
   if mountpoint -q "$ROOT/proc"; then sudo umount -l "$ROOT/proc"; fi
@@ -47,7 +47,10 @@ cleanup() {
 trap cleanup EXIT
 
 require() {
-  command -v "$1" >/dev/null 2>&1 || { echo "missing command: $1" >&2; exit 1; }
+  command -v "$1" > /dev/null 2>&1 || {
+    echo "missing command: $1" >&2
+    exit 1
+  }
 }
 
 for cmd in curl qemu-img parted losetup mkfs.vfat mkfs.ext4 blkid tar chroot systemctl; do
@@ -89,7 +92,7 @@ sudo tar --numeric-owner -xpf "$TARBALL" -C "$ROOT"
 BOOT_PARTUUID="$(sudo blkid -s PARTUUID -o value "${LOOPDEV}p1")"
 ROOT_PARTUUID="$(sudo blkid -s PARTUUID -o value "${LOOPDEV}p2")"
 
-sudo tee "$ROOT/etc/fstab" >/dev/null <<EOF
+sudo tee "$ROOT/etc/fstab" > /dev/null << EOF
 # Static information about the filesystems.
 # See fstab(5) for details.
 
@@ -101,7 +104,7 @@ sudo mkdir -p "$ROOT/boot/EFI/systemd" "$ROOT/boot/EFI/BOOT" "$ROOT/boot/loader/
 sudo cp "$ROOT/usr/lib/systemd/boot/efi/systemd-bootaa64.efi" "$ROOT/boot/EFI/systemd/systemd-bootaa64.efi"
 sudo cp "$ROOT/usr/lib/systemd/boot/efi/systemd-bootaa64.efi" "$ROOT/boot/EFI/BOOT/BOOTAA64.EFI"
 
-sudo tee "$ROOT/boot/loader/loader.conf" >/dev/null <<EOF
+sudo tee "$ROOT/boot/loader/loader.conf" > /dev/null << EOF
 default arch
 timeout 0
 editor no
@@ -110,14 +113,14 @@ auto-entries 0
 auto-firmware 1
 EOF
 
-sudo tee "$ROOT/boot/loader/entries/arch.conf" >/dev/null <<EOF
+sudo tee "$ROOT/boot/loader/entries/arch.conf" > /dev/null << EOF
 title   Arch Linux ARM
 linux   /Image
 initrd  /initramfs-linux.img
 options root=PARTUUID=${ROOT_PARTUUID} rw quiet
 EOF
 
-sudo tee "$ROOT/boot/loader/entries/arch-fallback.conf" >/dev/null <<EOF
+sudo tee "$ROOT/boot/loader/entries/arch-fallback.conf" > /dev/null << EOF
 title   Arch Linux ARM (fallback)
 linux   /Image
 initrd  /initramfs-linux-fallback.img
@@ -142,7 +145,7 @@ sudo chroot "$ROOT" /bin/bash -lc '
 '
 
 sudo mkdir -p "$ROOT/etc/cloud/cloud.cfg.d"
-sudo tee "$ROOT/etc/cloud/cloud.cfg.d/99_nocloud.cfg" >/dev/null <<'EOF'
+sudo tee "$ROOT/etc/cloud/cloud.cfg.d/99_nocloud.cfg" > /dev/null << 'EOF'
 datasource_list: [ NoCloud, None ]
 datasource:
   NoCloud:
@@ -168,7 +171,7 @@ sudo chroot "$ROOT" /bin/bash -lc "
   chmod 440 /etc/sudoers.d/90-lima-user
 "
 
-sudo chroot "$ROOT" /usr/bin/systemd-tmpfiles --create >/dev/null || true
+sudo chroot "$ROOT" /usr/bin/systemd-tmpfiles --create > /dev/null || true
 sudo systemctl --root="$ROOT" enable \
   sshd \
   systemd-networkd \
@@ -178,7 +181,7 @@ sudo systemctl --root="$ROOT" enable \
   cloud-init-network.service \
   cloud-init-main.service \
   cloud-config.service \
-  cloud-final.service >/dev/null
+  cloud-final.service > /dev/null
 
 cleanup
 trap - EXIT

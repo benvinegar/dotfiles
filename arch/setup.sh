@@ -8,7 +8,7 @@ DRY_RUN=0
 PACMAN_FLAGS=()
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: ./arch/setup.sh [--dry-run] [--noconfirm]
 
 Install the Arch-specific toolchain used by this dotfiles repo.
@@ -49,7 +49,7 @@ load_packages() {
 }
 
 package_exists_in_pacman() {
-  pacman -Si "$1" >/dev/null 2>&1
+  pacman -Si "$1" > /dev/null 2>&1
 }
 
 install_arch_packages() {
@@ -117,7 +117,7 @@ configure_login_shell() {
 configure_npm_globals() {
   local prefix
 
-  if ! command -v npm >/dev/null 2>&1; then
+  if ! command -v npm > /dev/null 2>&1; then
     echo "warning: npm is not installed; skipping npm global prefix setup"
     return 0
   fi
@@ -135,7 +135,7 @@ while [ "$#" -gt 0 ]; do
     --noconfirm)
       PACMAN_FLAGS+=(--noconfirm)
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -153,7 +153,7 @@ if [ "$(uname -s)" != "Linux" ]; then
   exit 1
 fi
 
-if ! command -v pacman >/dev/null 2>&1; then
+if ! command -v pacman > /dev/null 2>&1; then
   echo "error: pacman not found; this script is intended for Arch Linux" >&2
   exit 1
 fi
@@ -169,7 +169,7 @@ else
   "$DOTFILES_ROOT/zsh/bootstrap.sh"
 fi
 
-cat <<'EOF'
+cat << 'EOF'
 
 Arch setup complete.
 

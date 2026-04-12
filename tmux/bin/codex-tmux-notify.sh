@@ -14,6 +14,6 @@ pane_id="${TMUX_PANE:-}"
 [ -n "$pane_id" ] || exit 0
 
 state_dir="${XDG_RUNTIME_DIR:-/tmp}/tmux-agent-watch"
-rm -f "$state_dir/codex-busy-${pane_id#%}.ts" 2>/dev/null || true
+rm -f "$state_dir/codex-busy-${pane_id#%}.ts" 2> /dev/null || true
 
-tmux select-pane -t "$pane_id" -T codex:idle >/dev/null 2>&1 || true
+tmux select-pane -t "$pane_id" -T codex:idle > /dev/null 2>&1 || true

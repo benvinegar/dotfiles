@@ -18,7 +18,10 @@ SSH_PUBKEY_PATH="${LIMA_SSH_PUBKEY_PATH:-$HOME/.lima/_config/user.pub}"
 BUILDER_DEPS="${BUILDER_DEPS:-qemu-utils parted dosfstools e2fsprogs util-linux systemd-container curl rsync}"
 
 require() {
-  command -v "$1" >/dev/null 2>&1 || { echo "missing command: $1" >&2; exit 1; }
+  command -v "$1" > /dev/null 2>&1 || {
+    echo "missing command: $1" >&2
+    exit 1
+  }
 }
 
 builder_exists() {
@@ -26,7 +29,7 @@ builder_exists() {
 }
 
 ensure_builder() {
-  if limactl shell "$BUILDER_INSTANCE" -- true >/dev/null 2>&1; then
+  if limactl shell "$BUILDER_INSTANCE" -- true > /dev/null 2>&1; then
     return 0
   fi
 
@@ -84,19 +87,19 @@ main() {
 
   echo "Writing Lima template: $TEMPLATE_PATH"
   OUTPUT_PATH="$TEMPLATE_PATH" \
-  IMAGE_PATH="$IMAGE_PATH" \
-  INSTANCE_NAME="$INSTANCE_NAME" \
-  LIMA_USER_NAME="$LIMA_USER_NAME" \
-  LIMA_USER_UID="$LIMA_USER_UID" \
-  LIMA_USER_HOME="$LIMA_USER_HOME" \
-  LIMA_USER_SHELL="$LIMA_USER_SHELL" \
-  "$WRITE_TEMPLATE_SCRIPT" >/dev/null
+    IMAGE_PATH="$IMAGE_PATH" \
+    INSTANCE_NAME="$INSTANCE_NAME" \
+    LIMA_USER_NAME="$LIMA_USER_NAME" \
+    LIMA_USER_UID="$LIMA_USER_UID" \
+    LIMA_USER_HOME="$LIMA_USER_HOME" \
+    LIMA_USER_SHELL="$LIMA_USER_SHELL" \
+    "$WRITE_TEMPLATE_SCRIPT" > /dev/null
 
   echo "Recreating Lima instance: $INSTANCE_NAME"
-  limactl delete -f "$INSTANCE_NAME" >/dev/null 2>&1 || true
+  limactl delete -f "$INSTANCE_NAME" > /dev/null 2>&1 || true
   limactl start --name="$INSTANCE_NAME" --yes "$TEMPLATE_PATH"
 
-  cat <<EOF
+  cat << EOF
 
 Next step:
   $SCRIPT_DIR/bootstrap-dotfiles.sh

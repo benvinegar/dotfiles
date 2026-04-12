@@ -2,7 +2,7 @@
 
 case $- in
   *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
+  *) return 0 2> /dev/null || exit 0 ;;
 esac
 
 compress() {

@@ -80,6 +80,8 @@ Current managed terminal tools live in `packages/common.txt`:
 - `fzf`
 - `jq`
 - `fresh`
+- `shellcheck`
+- `shfmt`
 
 Right now these package names match on both Homebrew and Arch, so one plain-text list is enough.
 If they ever diverge, add a small platform mapping layer instead of duplicating the whole list.
@@ -110,6 +112,13 @@ Use a dry run to preview what would be installed:
 ```bash
 ./bootstrap.sh --dry-run
 ./arch/setup.sh --dry-run
+```
+
+Lint or format the managed shell scripts with:
+
+```bash
+./scripts/lint-shell.sh
+./scripts/format-shell.sh
 ```
 
 For unattended Arch installs, pass `--noconfirm`:

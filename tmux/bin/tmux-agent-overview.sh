@@ -4,7 +4,7 @@ set -euo pipefail
 # Popup-friendly snapshot of all windows in the current tmux session.
 # Shows agent type/state from pane title + recent activity age + last prompt/output line.
 
-if ! tmux list-windows >/dev/null 2>&1; then
+if ! tmux list-windows > /dev/null 2>&1; then
   echo "Not inside a tmux server/session."
   exit 1
 fi
@@ -50,7 +50,7 @@ find_agent_pids() {
   local pane_pid="$1"
   local children codex_node_pid codex_pid pi_pid opencode_pid
 
-  children="$(pgrep -a -P "$pane_pid" 2>/dev/null || true)"
+  children="$(pgrep -a -P "$pane_pid" 2> /dev/null || true)"
   codex_node_pid=""
   codex_pid=""
   pi_pid=""
@@ -60,7 +60,7 @@ find_agent_pids() {
     # npm-installed Codex appears as: node .../bin/codex ...
     codex_node_pid="$(printf '%s\n' "$children" | awk '$2=="node" && $0 ~ /(^|[[:space:]])codex([[:space:]]|$)|\/bin\/codex/ { print $1; exit }')"
     if [ -n "$codex_node_pid" ]; then
-      codex_pid="$(pgrep -P "$codex_node_pid" -x codex 2>/dev/null | head -n 1 || true)"
+      codex_pid="$(pgrep -P "$codex_node_pid" -x codex 2> /dev/null | head -n 1 || true)"
     fi
 
     pi_pid="$(printf '%s\n' "$children" | awk '$2=="pi" { print $1; exit }')"
@@ -75,12 +75,12 @@ codex_activity_age() {
   local session_file now mtime
 
   [ -n "$pid" ] || return 1
-  session_file="$(lsof -Fn -p "$pid" 2>/dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.codex/sessions/.*\.jsonl$' | head -n 1 || true)"
+  session_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.codex/sessions/.*\.jsonl$' | head -n 1 || true)"
   [ -n "$session_file" ] || return 1
   [ -f "$session_file" ] || return 1
 
   now="$(date +%s)"
-  mtime="$(stat -c %Y "$session_file" 2>/dev/null || echo 0)"
+  mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
   printf '%s\n' "$((now - mtime))"
 }
 
@@ -90,16 +90,16 @@ pi_activity_age() {
 
   [ -n "$pid" ] || return 1
 
-  session_file="$(lsof -Fn -p "$pid" 2>/dev/null | sed -n 's/^n//p' | grep '/\.pi/agent/sessions/.*\.jsonl$' | head -n 1 || true)"
+  session_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | grep '/\.pi/agent/sessions/.*\.jsonl$' | head -n 1 || true)"
 
   # Fallback: derive session directory from pi process cwd and pick newest session.
   if [ -z "$session_file" ]; then
-    cwd="$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)"
+    cwd="$(readlink -f "/proc/$pid/cwd" 2> /dev/null || true)"
     if [ -n "$cwd" ]; then
       session_key="--${cwd#/}--"
       session_key="${session_key//\//-}"
       session_dir="$HOME/.pi/agent/sessions/$session_key"
-      session_file="$(ls -1t "$session_dir"/*.jsonl 2>/dev/null | head -n 1 || true)"
+      session_file="$(ls -1t "$session_dir"/*.jsonl 2> /dev/null | head -n 1 || true)"
     fi
   fi
 
@@ -107,7 +107,7 @@ pi_activity_age() {
   [ -f "$session_file" ] || return 1
 
   now="$(date +%s)"
-  mtime="$(stat -c %Y "$session_file" 2>/dev/null || echo 0)"
+  mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
   printf '%s\n' "$((now - mtime))"
 }
 
@@ -117,16 +117,16 @@ opencode_activity_age() {
 
   [ -n "$pid" ] || return 1
 
-  log_file="$(lsof -Fn -p "$pid" 2>/dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.local/share/opencode/log/.*\.log$' | head -n 1 || true)"
+  log_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.local/share/opencode/log/.*\.log$' | head -n 1 || true)"
   if [ -z "$log_file" ]; then
-    log_file="$(ls -1t "$HOME"/.local/share/opencode/log/*.log 2>/dev/null | head -n 1 || true)"
+    log_file="$(ls -1t "$HOME"/.local/share/opencode/log/*.log 2> /dev/null | head -n 1 || true)"
   fi
 
   [ -n "$log_file" ] || return 1
   [ -f "$log_file" ] || return 1
 
   now="$(date +%s)"
-  mtime="$(stat -c %Y "$log_file" 2>/dev/null || echo 0)"
+  mtime="$(stat -c %Y "$log_file" 2> /dev/null || echo 0)"
   printf '%s\n' "$((now - mtime))"
 }
 
@@ -134,7 +134,7 @@ pane_preview() {
   local pane_id="$1"
   local captured prompt last
 
-  captured="$(tmux capture-pane -pt "$pane_id" -S -120 2>/dev/null || true)"
+  captured="$(tmux capture-pane -pt "$pane_id" -S -120 2> /dev/null || true)"
 
   # Codex prompt line is usually the most useful “current work” preview.
   prompt="$(printf '%s\n' "$captured" | awk '/^[[:space:]]*› /{last=$0} END{print last}')"
@@ -158,7 +158,7 @@ pane_excerpt() {
   local max_chars="${3:-900}"
   local captured cleaned
 
-  captured="$(tmux capture-pane -pt "$pane_id" -S -160 2>/dev/null || true)"
+  captured="$(tmux capture-pane -pt "$pane_id" -S -160 2> /dev/null || true)"
   cleaned="$(printf '%s\n' "$captured" | strip_ansi | tail -n "$max_lines" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
   cleaned="$(printf '%s\n' "$cleaned" | awk 'NF')"
 
@@ -175,11 +175,11 @@ pane_excerpt() {
 }
 
 trigger_pi_recaps() {
-  tmux list-panes -F '#{pane_id} #{pane_title}' |
-    while read -r pane_id pane_title; do
+  tmux list-panes -F '#{pane_id} #{pane_title}' \
+    | while read -r pane_id pane_title; do
       case "$pane_title" in
         pi:*)
-          tmux send-keys -t "$pane_id" '/recap raw' Enter >/dev/null 2>&1 || true
+          tmux send-keys -t "$pane_id" '/recap raw' Enter > /dev/null 2>&1 || true
           ;;
       esac
     done
@@ -192,7 +192,7 @@ generate_llm_summaries() {
   output_file="$(mktemp)"
 
   {
-    cat <<'PROMPT'
+    cat << 'PROMPT'
 You are summarizing active tmux agent windows.
 
 Return plain text with exactly one bullet per window in ascending order.
@@ -222,7 +222,7 @@ PROMPT
       local agent state codex_pid pi_pid opencode_pid pids age age_text preview folder excerpt
 
       case "$pane_title" in
-        codex:*|pi:*|opencode:*)
+        codex:* | pi:* | opencode:*)
           agent="${pane_title%%:*}"
           state="${pane_title#*:}"
           ;;
@@ -233,7 +233,7 @@ PROMPT
       esac
 
       pids="$(find_agent_pids "$pane_pid")"
-      IFS='|' read -r codex_pid pi_pid opencode_pid <<<"$pids"
+      IFS='|' read -r codex_pid pi_pid opencode_pid <<< "$pids"
 
       if [ -z "$agent" ]; then
         if [ -n "$codex_pid" ]; then
@@ -250,13 +250,13 @@ PROMPT
       age=""
       case "$agent" in
         codex)
-          age="$(codex_activity_age "$codex_pid" 2>/dev/null || true)"
+          age="$(codex_activity_age "$codex_pid" 2> /dev/null || true)"
           ;;
         pi)
-          age="$(pi_activity_age "$pi_pid" 2>/dev/null || true)"
+          age="$(pi_activity_age "$pi_pid" 2> /dev/null || true)"
           ;;
         opencode)
-          age="$(opencode_activity_age "$opencode_pid" 2>/dev/null || true)"
+          age="$(opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
           ;;
       esac
       age_text="$(format_age "$age")"
@@ -276,7 +276,7 @@ PROMPT
     done < <(tmux list-windows -F '#{window_index}')
   } > "$prompt_file"
 
-  if ! command -v codex >/dev/null 2>&1; then
+  if ! command -v codex > /dev/null 2>&1; then
     printf 'LLM summaries unavailable: codex CLI not found.\n' > "$LLM_SUMMARY_FILE"
     date '+%Y-%m-%d %H:%M:%S' > "$LLM_SUMMARY_TS_FILE"
     rm -f "$prompt_file" "$output_file"
@@ -286,7 +286,7 @@ PROMPT
   local log_file
   log_file="$STATE_DIR/agent-overview-llm.log"
 
-  if timeout 120 codex exec --skip-git-repo-check --ephemeral --color never --output-last-message "$output_file" - < "$prompt_file" >"$log_file" 2>&1; then
+  if timeout 120 codex exec --skip-git-repo-check --ephemeral --color never --output-last-message "$output_file" - < "$prompt_file" > "$log_file" 2>&1; then
     if [ -s "$output_file" ]; then
       printf '%s\n' "$(cat "$output_file")" | strip_ansi > "$LLM_SUMMARY_FILE"
       date '+%Y-%m-%d %H:%M:%S' > "$LLM_SUMMARY_TS_FILE"
@@ -313,7 +313,7 @@ PROMPT
 }
 
 render_once() {
-  tmux run-shell "$HOME/bin/tmux-agent-resync.sh" >/dev/null 2>&1 || true
+  tmux run-shell "$HOME/bin/tmux-agent-resync.sh" > /dev/null 2>&1 || true
 
   local session_name
   session_name="$(tmux display-message -p '#S')"
@@ -339,7 +339,7 @@ render_once() {
     local agent state codex_pid pi_pid opencode_pid pids age age_text preview folder win
 
     case "$pane_title" in
-      codex:*|pi:*|opencode:*)
+      codex:* | pi:* | opencode:*)
         agent="${pane_title%%:*}"
         state="${pane_title#*:}"
         ;;
@@ -350,7 +350,7 @@ render_once() {
     esac
 
     pids="$(find_agent_pids "$pane_pid")"
-    IFS='|' read -r codex_pid pi_pid opencode_pid <<<"$pids"
+    IFS='|' read -r codex_pid pi_pid opencode_pid <<< "$pids"
 
     if [ -z "$agent" ]; then
       if [ -n "$codex_pid" ]; then
@@ -367,13 +367,13 @@ render_once() {
     age=""
     case "$agent" in
       codex)
-        age="$(codex_activity_age "$codex_pid" 2>/dev/null || true)"
+        age="$(codex_activity_age "$codex_pid" 2> /dev/null || true)"
         ;;
       pi)
-        age="$(pi_activity_age "$pi_pid" 2>/dev/null || true)"
+        age="$(pi_activity_age "$pi_pid" 2> /dev/null || true)"
         ;;
       opencode)
-        age="$(opencode_activity_age "$opencode_pid" 2>/dev/null || true)"
+        age="$(opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
         ;;
     esac
     age_text="$(format_age "$age")"
@@ -393,7 +393,7 @@ render_once() {
 
   if [ -s "$LLM_SUMMARY_FILE" ]; then
     local summary_ts
-    summary_ts="$(cat "$LLM_SUMMARY_TS_FILE" 2>/dev/null || echo "unknown")"
+    summary_ts="$(cat "$LLM_SUMMARY_TS_FILE" 2> /dev/null || echo "unknown")"
     printf '\nLLM summaries (%s)\n' "$summary_ts"
     printf -- '------------------------------------------------------------------------------------------------------------------------\n'
     sed -n '1,12p' "$LLM_SUMMARY_FILE"
@@ -408,25 +408,25 @@ while true; do
 
   while IFS= read -rsn1 key; do
     case "$key" in
-      q|Q)
+      q | Q)
         exit 0
         ;;
-      r|R)
+      r | R)
         break
         ;;
-      a|A)
+      a | A)
         trigger_pi_recaps
         sleep 0.2
         break
         ;;
-      s|S)
+      s | S)
         clear
         printf 'Generating LLM summaries for all windows...\n'
         generate_llm_summaries
         break
         ;;
       [0-9])
-        tmux select-window -t "$key" >/dev/null 2>&1 || true
+        tmux select-window -t "$key" > /dev/null 2>&1 || true
         exit 0
         ;;
       *)

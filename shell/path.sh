@@ -2,7 +2,7 @@
 
 case $- in
   *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
+  *) return 0 2> /dev/null || exit 0 ;;
 esac
 
 # =============================================================================
@@ -40,7 +40,7 @@ export PATH
 # DEFAULT EDITOR
 # =============================================================================
 
-if command -v fresh >/dev/null 2>&1; then
+if command -v fresh > /dev/null 2>&1; then
   export EDITOR="${EDITOR:-fresh}"
   export VISUAL="${VISUAL:-$EDITOR}"
 fi
@@ -51,7 +51,7 @@ fi
 
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
-if [ -s "$NVM_DIR/nvm.sh" ] && ! command -v nvm >/dev/null 2>&1; then
+if [ -s "$NVM_DIR/nvm.sh" ] && ! command -v nvm > /dev/null 2>&1; then
   . "$NVM_DIR/nvm.sh"
 fi
 

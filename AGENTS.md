@@ -95,6 +95,8 @@ Common checks:
 - `./bootstrap.sh --dry-run`
 - `./arch/setup.sh --dry-run`
 - `./zsh/bootstrap.sh --dry-run`
+- `./scripts/lint-shell.sh`
+- `./scripts/format-shell.sh` when touching shell scripts
 - `./install.sh`
 - `./pi/install.sh`
 - `./arch/lima/write-template.sh`

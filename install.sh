@@ -111,9 +111,7 @@ for script in \
   tmux-busy-spinner.sh \
   tmux-detect-codex-pane.sh \
   tmux-sys-stats.sh \
-  tmux-watch-pi-turn.sh
-
-do
+  tmux-watch-pi-turn.sh; do
   chmod 755 "$DOTFILES_ROOT/tmux/bin/$script"
   link "$DOTFILES_ROOT/tmux/bin/$script" "$HOME/bin/$script"
 done
@@ -140,7 +138,7 @@ ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" 
 link "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
 link "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
 
-cat <<'EOF'
+cat << 'EOF'
 
 Done.
 

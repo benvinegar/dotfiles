@@ -12,7 +12,7 @@ OUTPUT_PATH="${OUTPUT_PATH:-$ARTIFACT_DIR/${INSTANCE_NAME}.yaml}"
 
 mkdir -p "$(dirname "$OUTPUT_PATH")"
 
-cat >"$OUTPUT_PATH" <<EOF
+cat > "$OUTPUT_PATH" << EOF
 minimumLimaVersion: 2.0.0
 
 vmType: vz
