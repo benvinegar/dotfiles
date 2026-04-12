@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+DOTFILES_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OH_MY_ZSH_DIR="${ZSH:-$HOME/.oh-my-zsh}"
-DRY_RUN=0
+export DRY_RUN=0
+
+# shellcheck source=../scripts/lib/bootstrap-helpers.sh
+. "$DOTFILES_ROOT/scripts/lib/bootstrap-helpers.sh"
 
 usage() {
   cat << 'EOF'
@@ -18,19 +22,6 @@ Options:
 EOF
 }
 
-run() {
-  if [ "$DRY_RUN" -eq 1 ]; then
-    printf '+'
-    for arg in "$@"; do
-      printf ' %q' "$arg"
-    done
-    printf '\n'
-    return 0
-  fi
-
-  "$@"
-}
-
 ensure_repo() {
   local name="$1"
   local repo="$2"
@@ -42,10 +33,8 @@ ensure_repo() {
   fi
 
   if [ -e "$dst" ]; then
-    if [ "$DRY_RUN" -eq 1 ]; then
-      printf '+ mv %q %q\n' "$dst" "${dst}.bak"
-    else
-      mv "$dst" "${dst}.bak"
+    run mv "$dst" "${dst}.bak"
+    if [ "$DRY_RUN" -eq 0 ]; then
       echo "backed up existing $name path: $dst -> ${dst}.bak"
     fi
   fi
@@ -73,15 +62,12 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-if ! command -v zsh > /dev/null 2>&1; then
+if ! has_command zsh; then
   echo "warning: zsh not found; skipping Oh My Zsh bootstrap"
   exit 0
 fi
 
-if ! command -v git > /dev/null 2>&1; then
-  echo "error: git is required to bootstrap Oh My Zsh" >&2
-  exit 1
-fi
+require_command git "error: git is required to bootstrap Oh My Zsh" || exit 1
 
 echo "Bootstrapping Zsh dependencies..."
 ensure_repo "Oh My Zsh" "https://github.com/ohmyzsh/ohmyzsh.git" "$OH_MY_ZSH_DIR"

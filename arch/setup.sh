@@ -4,8 +4,11 @@ set -euo pipefail
 DOTFILES_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 COMMON_PACKAGES_FILE="$DOTFILES_ROOT/packages/common.txt"
 ARCH_PACKAGES_FILE="$DOTFILES_ROOT/packages/arch-extra.txt"
-DRY_RUN=0
+export DRY_RUN=0
 PACMAN_FLAGS=()
+
+# shellcheck source=../scripts/lib/bootstrap-helpers.sh
+. "$DOTFILES_ROOT/scripts/lib/bootstrap-helpers.sh"
 
 usage() {
   cat << 'EOF'
@@ -24,28 +27,6 @@ Options:
   --noconfirm  Pass --noconfirm to pacman for unattended installs
   -h, --help   Show this help
 EOF
-}
-
-run() {
-  if [ "$DRY_RUN" -eq 1 ]; then
-    printf '+'
-    for arg in "$@"; do
-      printf ' %q' "$arg"
-    done
-    printf '\n'
-    return 0
-  fi
-
-  "$@"
-}
-
-load_packages() {
-  local file
-
-  for file in "$@"; do
-    [ -f "$file" ] || continue
-    grep -Ev '^[[:space:]]*(#|$)' "$file"
-  done | awk '!seen[$0]++'
 }
 
 package_exists_in_pacman() {
@@ -90,7 +71,11 @@ install_arch_packages() {
     return 0
   fi
 
-  run sudo pacman -S --needed "${PACMAN_FLAGS[@]}" "${available_packages[@]}"
+  if [ "${#PACMAN_FLAGS[@]}" -gt 0 ]; then
+    run sudo pacman -S --needed "${PACMAN_FLAGS[@]}" "${available_packages[@]}"
+  else
+    run sudo pacman -S --needed "${available_packages[@]}"
+  fi
 }
 
 configure_login_shell() {
@@ -117,7 +102,7 @@ configure_login_shell() {
 configure_npm_globals() {
   local prefix
 
-  if ! command -v npm > /dev/null 2>&1; then
+  if ! has_command npm; then
     echo "warning: npm is not installed; skipping npm global prefix setup"
     return 0
   fi
@@ -153,7 +138,7 @@ if [ "$(uname -s)" != "Linux" ]; then
   exit 1
 fi
 
-if ! command -v pacman > /dev/null 2>&1; then
+if ! has_command pacman; then
   echo "error: pacman not found; this script is intended for Arch Linux" >&2
   exit 1
 fi
@@ -163,11 +148,7 @@ configure_login_shell
 configure_npm_globals
 
 echo
-if [ "$DRY_RUN" -eq 1 ]; then
-  printf '+ %q %q\n' "$DOTFILES_ROOT/zsh/bootstrap.sh" "--dry-run"
-else
-  "$DOTFILES_ROOT/zsh/bootstrap.sh"
-fi
+run_dry_runnable_script "$DOTFILES_ROOT/zsh/bootstrap.sh"
 
 cat << 'EOF'
 

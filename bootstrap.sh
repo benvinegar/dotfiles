@@ -3,7 +3,10 @@ set -euo pipefail
 
 DOTFILES_ROOT="$(cd "$(dirname "$0")" && pwd)"
 PACKAGES_FILE="$DOTFILES_ROOT/packages/common.txt"
-DRY_RUN=0
+export DRY_RUN=0
+
+# shellcheck source=scripts/lib/bootstrap-helpers.sh
+. "$DOTFILES_ROOT/scripts/lib/bootstrap-helpers.sh"
 
 usage() {
   cat << 'EOF'
@@ -20,35 +23,18 @@ Options:
 EOF
 }
 
-run() {
-  if [ "$DRY_RUN" -eq 1 ]; then
-    printf '+'
-    for arg in "$@"; do
-      printf ' %q' "$arg"
-    done
-    printf '\n'
-    return 0
-  fi
-
-  "$@"
-}
-
-load_packages() {
-  grep -Ev '^[[:space:]]*(#|$)' "$PACKAGES_FILE"
-}
-
 install_arch() {
   local package
   local -a packages=()
 
-  if ! command -v pacman > /dev/null 2>&1; then
+  if ! has_command pacman; then
     echo "error: pacman not found; this bootstrap currently supports Arch Linux on Linux." >&2
     exit 1
   fi
 
   while IFS= read -r package; do
     packages+=("$package")
-  done < <(load_packages)
+  done < <(load_packages "$PACKAGES_FILE")
 
   if [ "${#packages[@]}" -eq 0 ]; then
     echo "No packages configured in $PACKAGES_FILE"
@@ -63,7 +49,7 @@ install_macos() {
   local package
   local -a packages=()
 
-  if ! command -v brew > /dev/null 2>&1; then
+  if ! has_command brew; then
     echo "error: Homebrew is required on macOS before running bootstrap.sh" >&2
     echo "Install it from https://brew.sh and rerun this script." >&2
     exit 1
@@ -71,7 +57,7 @@ install_macos() {
 
   while IFS= read -r package; do
     packages+=("$package")
-  done < <(load_packages)
+  done < <(load_packages "$PACKAGES_FILE")
 
   if [ "${#packages[@]}" -eq 0 ]; then
     echo "No packages configured in $PACKAGES_FILE"
@@ -115,11 +101,7 @@ esac
 
 if [ -x "$DOTFILES_ROOT/zsh/bootstrap.sh" ]; then
   echo
-  if [ "$DRY_RUN" -eq 1 ]; then
-    "$DOTFILES_ROOT/zsh/bootstrap.sh" --dry-run
-  else
-    "$DOTFILES_ROOT/zsh/bootstrap.sh"
-  fi
+  run_dry_runnable_script "$DOTFILES_ROOT/zsh/bootstrap.sh"
 fi
 
 cat << 'EOF'
