@@ -15,7 +15,7 @@ Maintain a small, understandable, symlink-based dotfiles repo that is:
 This repo is organized by tool, with source files that get symlinked into real runtime locations.
 
 Current top-level areas:
-- `arch/`
+- `arch/` (including `arch/lima/` for native Arch Linux ARM on Lima)
 - `tmux/`
 - `shell/`
 - `zsh/`
@@ -31,6 +31,11 @@ Current top-level areas:
 Important entrypoints:
 - `bootstrap.sh`
 - `arch/setup.sh`
+- `arch/lima/build-image.sh`
+- `arch/lima/write-template.sh`
+- `arch/lima/rebuild-vm.sh`
+- `arch/lima/bootstrap-dotfiles.sh`
+- `arch/lima/README.md`
 - `packages/common.txt`
 - `packages/arch-extra.txt`
 - `zsh/bootstrap.sh`
@@ -88,9 +93,11 @@ Run the smallest relevant validation set.
 
 Common checks:
 - `./bootstrap.sh --dry-run`
+- `./arch/setup.sh --dry-run`
 - `./zsh/bootstrap.sh --dry-run`
 - `./install.sh`
 - `./pi/install.sh`
+- `./arch/lima/write-template.sh`
 - `tmux source-file ~/.tmux.conf` for tmux changes
 - inspect installed symlinks if layout changed
 - inspect `git diff` before committing
@@ -98,6 +105,8 @@ Common checks:
 Useful audits:
 - search for personal paths: `rg -n '/home/|/Users/' .`
 - search for obvious secrets: `rg -n 'api[_-]?key|token|secret|password' .`
+
+For `arch/lima/` changes, keep generated images, rendered templates, and other machine-local artifacts out of git; scripts should write them to user-local paths outside the repo.
 
 ## Design preferences
 

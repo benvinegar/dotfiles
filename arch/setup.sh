@@ -5,10 +5,11 @@ DOTFILES_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 COMMON_PACKAGES_FILE="$DOTFILES_ROOT/packages/common.txt"
 ARCH_PACKAGES_FILE="$DOTFILES_ROOT/packages/arch-extra.txt"
 DRY_RUN=0
+PACMAN_FLAGS=()
 
 usage() {
   cat <<'EOF'
-Usage: ./arch/setup.sh [--dry-run]
+Usage: ./arch/setup.sh [--dry-run] [--noconfirm]
 
 Install the Arch-specific toolchain used by this dotfiles repo.
 This includes:
@@ -19,8 +20,9 @@ This includes:
 - configuring npm global installs to use ~/.local
 
 Options:
-  --dry-run   Print the install command without running it
-  -h, --help  Show this help
+  --dry-run    Print the install command without running it
+  --noconfirm  Pass --noconfirm to pacman for unattended installs
+  -h, --help   Show this help
 EOF
 }
 
@@ -46,9 +48,13 @@ load_packages() {
   done | awk '!seen[$0]++'
 }
 
+package_exists_in_pacman() {
+  pacman -Si "$1" >/dev/null 2>&1
+}
+
 install_arch_packages() {
   local package
-  local -a packages=()
+  local -a packages=() available_packages=() missing_packages=()
 
   while IFS= read -r package; do
     packages+=("$package")
@@ -59,10 +65,32 @@ install_arch_packages() {
     return 0
   fi
 
+  for package in "${packages[@]}"; do
+    if package_exists_in_pacman "$package"; then
+      available_packages+=("$package")
+    else
+      missing_packages+=("$package")
+    fi
+  done
+
   echo "Installing Arch packages from:"
   echo "  - $COMMON_PACKAGES_FILE"
   echo "  - $ARCH_PACKAGES_FILE"
-  run sudo pacman -S --needed "${packages[@]}"
+
+  if [ "${#missing_packages[@]}" -gt 0 ]; then
+    printf 'warning: skipping unavailable Arch packages:'
+    for package in "${missing_packages[@]}"; do
+      printf ' %s' "$package"
+    done
+    printf '\n'
+  fi
+
+  if [ "${#available_packages[@]}" -eq 0 ]; then
+    echo "No Arch packages available to install"
+    return 0
+  fi
+
+  run sudo pacman -S --needed "${PACMAN_FLAGS[@]}" "${available_packages[@]}"
 }
 
 configure_login_shell() {
@@ -103,6 +131,9 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
+      ;;
+    --noconfirm)
+      PACMAN_FLAGS+=(--noconfirm)
       ;;
     -h|--help)
       usage

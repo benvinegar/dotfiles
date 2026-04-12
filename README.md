@@ -20,6 +20,15 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
+On macOS Apple Silicon, this repo also includes a reproducible native Arch Linux ARM Lima workflow:
+
+```bash
+~/.dotfiles/arch/lima/rebuild-vm.sh
+~/.dotfiles/arch/lima/bootstrap-dotfiles.sh
+```
+
+See `arch/lima/README.md` for details and environment overrides.
+
 `bootstrap.sh` installs terminal tools with the native package manager from one shared package list and bootstraps Zsh core dependencies:
 - macOS: Homebrew via `brew install`
 - Arch Linux: `pacman`
@@ -43,7 +52,7 @@ cd ~/.dotfiles
 
 ## Repo layout
 
-- `arch/` — Arch Linux convenience setup entrypoints for fresh VMs and installs
+- `arch/` — Arch Linux convenience setup entrypoints for fresh VMs and installs, including `arch/lima/` for native Arch Linux ARM on Lima
 - `tmux/` — tmux config and helper scripts
 - `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
 - `zsh/` — Zsh-specific bootstrap and prompt wiring files such as `p10k.zsh` and `oh-my-zsh.zsh`
@@ -77,6 +86,7 @@ If they ever diverge, add a small platform mapping layer instead of duplicating 
 For Arch-specific machine setup, `./arch/setup.sh` installs both:
 - `packages/common.txt`
 - `packages/arch-extra.txt`
+- skips packages that are not available in the current Arch repos
 - switches the login shell to `zsh` when available
 - configures npm global installs to use `~/.local`
 
@@ -99,6 +109,12 @@ Use a dry run to preview what would be installed:
 ```bash
 ./bootstrap.sh --dry-run
 ./arch/setup.sh --dry-run
+```
+
+For unattended Arch installs, pass `--noconfirm`:
+
+```bash
+./arch/setup.sh --noconfirm
 ```
 
 ## Shell utilities
