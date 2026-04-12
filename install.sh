@@ -60,6 +60,7 @@ link_path "$DOTFILES_ROOT/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 # tmux helper scripts
 mkdir -p "$HOME/bin"
+link_path "$DOTFILES_ROOT/tmux/bin/lib" "$HOME/bin/lib"
 for script in \
   codex-tmux-notify.sh \
   tmux-agent-daemon.sh \

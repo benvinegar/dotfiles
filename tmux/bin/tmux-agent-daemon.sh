@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-state_dir="${XDG_RUNTIME_DIR:-/tmp}/tmux-agent-watch"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib/agent-state.sh
+. "$SCRIPT_DIR/lib/agent-state.sh"
+
+state_dir="$(tmux_agent_ensure_state_dir)"
 pid_file="$state_dir/resync-daemon.pid"
-mkdir -p "$state_dir"
 
 if [ -f "$pid_file" ]; then
   old_pid="$(cat "$pid_file" 2> /dev/null || true)"

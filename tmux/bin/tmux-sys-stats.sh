@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-state_dir="${XDG_RUNTIME_DIR:-/tmp}/tmux-agent-watch"
-mkdir -p "$state_dir"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib/agent-state.sh
+. "$SCRIPT_DIR/lib/agent-state.sh"
+
+state_dir="$(tmux_agent_ensure_state_dir)"
 cpu_state_file="$state_dir/tmux-cpu-prev"
 
 # --- CPU (delta between invocations) ---

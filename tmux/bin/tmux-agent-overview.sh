@@ -9,8 +9,12 @@ if ! tmux list-windows > /dev/null 2>&1; then
   exit 1
 fi
 
-STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/tmux-agent-watch"
-mkdir -p "$STATE_DIR"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib/agent-state.sh
+. "$SCRIPT_DIR/lib/agent-state.sh"
+
+STATE_DIR="$(tmux_agent_ensure_state_dir)"
 LLM_SUMMARY_FILE="$STATE_DIR/agent-overview-llm-summary.txt"
 LLM_SUMMARY_TS_FILE="$STATE_DIR/agent-overview-llm-summary.ts"
 
@@ -44,90 +48,6 @@ format_age() {
     return
   fi
   printf '%sd%sh' "$((sec / 86400))" "$(((sec % 86400) / 3600))"
-}
-
-find_agent_pids() {
-  local pane_pid="$1"
-  local children codex_node_pid codex_pid pi_pid opencode_pid
-
-  children="$(pgrep -a -P "$pane_pid" 2> /dev/null || true)"
-  codex_node_pid=""
-  codex_pid=""
-  pi_pid=""
-  opencode_pid=""
-
-  if [ -n "$children" ]; then
-    # npm-installed Codex appears as: node .../bin/codex ...
-    codex_node_pid="$(printf '%s\n' "$children" | awk '$2=="node" && $0 ~ /(^|[[:space:]])codex([[:space:]]|$)|\/bin\/codex/ { print $1; exit }')"
-    if [ -n "$codex_node_pid" ]; then
-      codex_pid="$(pgrep -P "$codex_node_pid" -x codex 2> /dev/null | head -n 1 || true)"
-    fi
-
-    pi_pid="$(printf '%s\n' "$children" | awk '$2=="pi" { print $1; exit }')"
-    opencode_pid="$(printf '%s\n' "$children" | awk '$2=="opencode" { print $1; exit }')"
-  fi
-
-  printf '%s|%s|%s\n' "$codex_pid" "$pi_pid" "$opencode_pid"
-}
-
-codex_activity_age() {
-  local pid="$1"
-  local session_file now mtime
-
-  [ -n "$pid" ] || return 1
-  session_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.codex/sessions/.*\.jsonl$' | head -n 1 || true)"
-  [ -n "$session_file" ] || return 1
-  [ -f "$session_file" ] || return 1
-
-  now="$(date +%s)"
-  mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
-  printf '%s\n' "$((now - mtime))"
-}
-
-pi_activity_age() {
-  local pid="$1"
-  local session_file now mtime cwd session_key session_dir
-
-  [ -n "$pid" ] || return 1
-
-  session_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | grep '/\.pi/agent/sessions/.*\.jsonl$' | head -n 1 || true)"
-
-  # Fallback: derive session directory from pi process cwd and pick newest session.
-  if [ -z "$session_file" ]; then
-    cwd="$(readlink -f "/proc/$pid/cwd" 2> /dev/null || true)"
-    if [ -n "$cwd" ]; then
-      session_key="--${cwd#/}--"
-      session_key="${session_key//\//-}"
-      session_dir="$HOME/.pi/agent/sessions/$session_key"
-      session_file="$(ls -1t "$session_dir"/*.jsonl 2> /dev/null | head -n 1 || true)"
-    fi
-  fi
-
-  [ -n "$session_file" ] || return 1
-  [ -f "$session_file" ] || return 1
-
-  now="$(date +%s)"
-  mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
-  printf '%s\n' "$((now - mtime))"
-}
-
-opencode_activity_age() {
-  local pid="$1"
-  local log_file now mtime
-
-  [ -n "$pid" ] || return 1
-
-  log_file="$(lsof -Fn -p "$pid" 2> /dev/null | sed -n 's/^n//p' | sed 's/ (deleted)$//' | grep '/\.local/share/opencode/log/.*\.log$' | head -n 1 || true)"
-  if [ -z "$log_file" ]; then
-    log_file="$(ls -1t "$HOME"/.local/share/opencode/log/*.log 2> /dev/null | head -n 1 || true)"
-  fi
-
-  [ -n "$log_file" ] || return 1
-  [ -f "$log_file" ] || return 1
-
-  now="$(date +%s)"
-  mtime="$(stat -c %Y "$log_file" 2> /dev/null || echo 0)"
-  printf '%s\n' "$((now - mtime))"
 }
 
 pane_preview() {
@@ -219,7 +139,7 @@ PROMPT
       pane_cmd="$(tmux display-message -p -t "$target" '#{pane_current_command}')"
       pane_path="$(tmux display-message -p -t "$target" '#{pane_current_path}')"
 
-      local agent state codex_pid pi_pid opencode_pid pids age age_text preview folder excerpt
+      local agent state _codex_node_pid codex_pid pi_pid opencode_pid pids age age_text preview folder excerpt
 
       case "$pane_title" in
         codex:* | pi:* | opencode:*)
@@ -232,8 +152,8 @@ PROMPT
           ;;
       esac
 
-      pids="$(find_agent_pids "$pane_pid")"
-      IFS='|' read -r codex_pid pi_pid opencode_pid <<< "$pids"
+      pids="$(tmux_agent_find_pids "$pane_pid")"
+      IFS='|' read -r _codex_node_pid codex_pid pi_pid opencode_pid <<< "$pids"
 
       if [ -z "$agent" ]; then
         if [ -n "$codex_pid" ]; then
@@ -250,13 +170,13 @@ PROMPT
       age=""
       case "$agent" in
         codex)
-          age="$(codex_activity_age "$codex_pid" 2> /dev/null || true)"
+          age="$(tmux_agent_codex_activity_age "$codex_pid" 2> /dev/null || true)"
           ;;
         pi)
-          age="$(pi_activity_age "$pi_pid" 2> /dev/null || true)"
+          age="$(tmux_agent_pi_activity_age "$pi_pid" 2> /dev/null || true)"
           ;;
         opencode)
-          age="$(opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
+          age="$(tmux_agent_opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
           ;;
       esac
       age_text="$(format_age "$age")"
@@ -336,7 +256,7 @@ render_once() {
     pane_cmd="$(tmux display-message -p -t "$target" '#{pane_current_command}')"
     pane_path="$(tmux display-message -p -t "$target" '#{pane_current_path}')"
 
-    local agent state codex_pid pi_pid opencode_pid pids age age_text preview folder win
+    local agent state _codex_node_pid codex_pid pi_pid opencode_pid pids age age_text preview folder win
 
     case "$pane_title" in
       codex:* | pi:* | opencode:*)
@@ -349,8 +269,8 @@ render_once() {
         ;;
     esac
 
-    pids="$(find_agent_pids "$pane_pid")"
-    IFS='|' read -r codex_pid pi_pid opencode_pid <<< "$pids"
+    pids="$(tmux_agent_find_pids "$pane_pid")"
+    IFS='|' read -r _codex_node_pid codex_pid pi_pid opencode_pid <<< "$pids"
 
     if [ -z "$agent" ]; then
       if [ -n "$codex_pid" ]; then
@@ -367,13 +287,13 @@ render_once() {
     age=""
     case "$agent" in
       codex)
-        age="$(codex_activity_age "$codex_pid" 2> /dev/null || true)"
+        age="$(tmux_agent_codex_activity_age "$codex_pid" 2> /dev/null || true)"
         ;;
       pi)
-        age="$(pi_activity_age "$pi_pid" 2> /dev/null || true)"
+        age="$(tmux_agent_pi_activity_age "$pi_pid" 2> /dev/null || true)"
         ;;
       opencode)
-        age="$(opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
+        age="$(tmux_agent_opencode_activity_age "$opencode_pid" 2> /dev/null || true)"
         ;;
     esac
     age_text="$(format_age "$age")"

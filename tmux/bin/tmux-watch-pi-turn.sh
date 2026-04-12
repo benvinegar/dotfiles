@@ -3,6 +3,10 @@ set -euo pipefail
 
 pane_id="${1:-}"
 pane_pid="${2:-}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# shellcheck source=lib/agent-state.sh
+. "$SCRIPT_DIR/lib/agent-state.sh"
 
 [ -n "$pane_id" ] || exit 0
 [ -n "$pane_pid" ] || exit 0
@@ -10,26 +14,12 @@ pane_pid="${2:-}"
 pi_pid="$(pgrep -P "$pane_pid" -x pi 2> /dev/null | head -n 1 || true)"
 [ -n "$pi_pid" ] || exit 0
 
-session_file="$(lsof -Fn -p "$pi_pid" 2> /dev/null | sed -n 's/^n//p' | grep '/\.pi/agent/sessions/.*\.jsonl$' | head -n 1 || true)"
-
-# Fallback: derive session directory from pi process cwd and pick newest session.
-if [ -z "$session_file" ]; then
-  cwd="$(readlink -f "/proc/$pi_pid/cwd" 2> /dev/null || true)"
-  if [ -n "$cwd" ]; then
-    session_key="--${cwd#/}--"
-    session_key="${session_key//\//-}"
-    session_dir="$HOME/.pi/agent/sessions/$session_key"
-    session_file="$(ls -1t "$session_dir"/*.jsonl 2> /dev/null | head -n 1 || true)"
-  fi
-fi
-
+session_file="$(tmux_agent_pi_session_file "$pi_pid" 2> /dev/null || true)"
 [ -n "$session_file" ] || exit 0
 [ -f "$session_file" ] || exit 0
 
-state_dir="${XDG_RUNTIME_DIR:-/tmp}/tmux-agent-watch"
-mkdir -p "$state_dir"
-watch_key="${pane_id#%}"
-pid_file="$state_dir/pi-watch-${watch_key}.pid"
+tmux_agent_ensure_state_dir > /dev/null
+pid_file="$(tmux_agent_pi_watch_pid_file "$pane_id")"
 
 # Replace any existing watcher for this pane.
 if [ -f "$pid_file" ]; then
@@ -42,22 +32,22 @@ fi
 (
   echo $$ > "$pid_file"
 
-  tmux select-pane -t "$pane_id" -T pi:busy > /dev/null 2>&1 || true
+  tmux_agent_set_title "$pane_id" pi:busy
 
   stable_seconds=0
   saw_change=0
   started_at="$(date +%s)"
-  last_mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
+  last_mtime="$(tmux_agent_file_mtime "$session_file")"
 
   while kill -0 "$pi_pid" 2> /dev/null; do
     sleep 1
 
-    current_mtime="$(stat -c %Y "$session_file" 2> /dev/null || echo 0)"
+    current_mtime="$(tmux_agent_file_mtime "$session_file")"
     if [ "$current_mtime" != "$last_mtime" ]; then
       saw_change=1
       stable_seconds=0
       last_mtime="$current_mtime"
-      tmux select-pane -t "$pane_id" -T pi:busy > /dev/null 2>&1 || true
+      tmux_agent_set_title "$pane_id" pi:busy
       continue
     fi
 
@@ -68,20 +58,20 @@ fi
     # Normal completion path: once we observe session log activity and then it
     # goes quiet for a few seconds, treat the turn as complete.
     if [ "$saw_change" -eq 1 ] && [ "$stable_seconds" -ge 3 ]; then
-      tmux select-pane -t "$pane_id" -T pi:idle > /dev/null 2>&1 || true
+      tmux_agent_set_title "$pane_id" pi:idle
       break
     fi
 
     # Fallback: if we never observed session-log writes, keep busy for a while
     # (models can spend time thinking before first write), then fail open.
     if [ "$saw_change" -eq 0 ] && [ "$elapsed" -ge 90 ]; then
-      tmux select-pane -t "$pane_id" -T pi:idle > /dev/null 2>&1 || true
+      tmux_agent_set_title "$pane_id" pi:idle
       break
     fi
 
     # Hard stop after 20 minutes to avoid stale watchers.
     if [ "$elapsed" -ge 1200 ]; then
-      tmux select-pane -t "$pane_id" -T pi:idle > /dev/null 2>&1 || true
+      tmux_agent_set_title "$pane_id" pi:idle
       break
     fi
   done
