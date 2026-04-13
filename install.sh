@@ -93,6 +93,36 @@ ensure_block "$HOME/.zshrc" "# >>> dotfiles shell init >>>" "# <<< dotfiles shel
 ensure_block "$HOME/.zshrc" "# >>> dotfiles oh-my-zsh >>>" "# <<< dotfiles oh-my-zsh <<<" "$omz_init"
 ensure_block "$HOME/.zshrc" "# >>> dotfiles p10k >>>" "# <<< dotfiles p10k <<<" "$p10k_init"
 
+# Disable the stock Oh My Zsh template block once dotfiles-managed blocks are present.
+# Leaving both active causes duplicate OMZ loading and plugin warnings during p10k instant prompt.
+legacy_omz_begin='# If you come from bash you might have to change your $PATH.'
+legacy_omz_end='# >>> dotfiles shell init >>>'
+if grep -Fq "$legacy_omz_begin" "$HOME/.zshrc" 2>/dev/null; then
+  legacy_tmp="$(mktemp)"
+  in_legacy=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ "$in_legacy" -eq 0 ] && [ "$line" = "$legacy_omz_begin" ]; then
+      printf '%s\n' '# Legacy Oh My Zsh template block disabled by dotfiles install.sh' >> "$legacy_tmp"
+      in_legacy=1
+      continue
+    fi
+    if [ "$in_legacy" -eq 1 ]; then
+      if [ "$line" = "$legacy_omz_end" ]; then
+        printf '\n%s\n' "$line" >> "$legacy_tmp"
+        in_legacy=0
+      fi
+      continue
+    fi
+    printf '%s\n' "$line" >> "$legacy_tmp"
+  done < "$HOME/.zshrc"
+  if ! cmp -s "$HOME/.zshrc" "$legacy_tmp"; then
+    mv "$legacy_tmp" "$HOME/.zshrc"
+    echo "updated: $HOME/.zshrc"
+  else
+    rm -f "$legacy_tmp"
+  fi
+fi
+
 # shared agent skills
 link_path "$DOTFILES_ROOT/skills" "$HOME/.agents/skills"
 link_path "$DOTFILES_ROOT/skills" "$HOME/.claude/skills"
