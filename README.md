@@ -41,6 +41,7 @@ See `arch/lima/README.md` for details and environment overrides.
 - `~/.tmux.conf` via symlink
 - tmux helper scripts into `~/bin/` via symlink
 - `~/.codex/config.toml` via copy
+- `~/.config/git/config` via copy
 - `~/.config/dotfiles/shell` via symlink
 - `~/.config/dotfiles/oh-my-zsh-custom` via symlink
 - `~/.config/dotfiles/zsh/oh-my-zsh.zsh` via symlink
@@ -51,6 +52,8 @@ See `arch/lima/README.md` for details and environment overrides.
 - shared agent skills into `~/.claude/skills` via symlink
 
 `~/.codex/config.toml` is intentionally **copied**, not symlinked, because Codex mutates its live config during normal TUI use.
+
+`~/.config/git/config` is also intentionally **copied**, so your repo-managed baseline identity/settings can seed new machines without fighting local overrides later.
 
 ## Repo layout
 

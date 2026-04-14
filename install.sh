@@ -79,6 +79,9 @@ done
 # Copy instead of symlink: Codex mutates its live config.toml during normal TUI use.
 seed_copy_path "$DOTFILES_ROOT/codex/config.toml" "$HOME/.codex/config.toml"
 
+# git
+seed_copy_path "$DOTFILES_ROOT/git/config" "$HOME/.config/git/config"
+
 # shared shell config
 link_path "$DOTFILES_ROOT/shell" "$HOME/.config/dotfiles/shell"
 link_path "$DOTFILES_ROOT/oh-my-zsh-custom" "$HOME/.config/dotfiles/oh-my-zsh-custom"
