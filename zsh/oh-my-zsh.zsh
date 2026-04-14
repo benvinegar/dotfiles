@@ -8,6 +8,10 @@ plugins=(git zsh-autosuggestions)
 
 [ -r "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
 
+# Re-source fzf's shell integration after Oh My Zsh/plugin init so the zsh
+# widgets are available before we remap Ctrl-R.
+[ -r "$HOME/.config/dotfiles/shell/fzf.sh" ] && . "$HOME/.config/dotfiles/shell/fzf.sh"
+
 # Prefer fzf's history widget over the stock incremental Ctrl-R binding.
 # This must run after Oh My Zsh/plugin init because later startup code can
 # restore the default history-incremental-search-backward binding.

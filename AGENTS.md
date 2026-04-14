@@ -57,6 +57,12 @@ When changing layout, update installers and docs in the same change.
 - Prefer POSIX-ish shell where practical.
 - If a command is platform-specific, add a fallback or gate it clearly.
 - Prefer `$HOME` in shell scripts over hardcoded home paths.
+- Prefer capability detection (`command -v`, tool-emitted init, supported flags) over OS checks when possible.
+- Do not hardcode package-manager-specific install roots such as `/usr/share`, `/opt/homebrew`, or `/usr/local/opt` unless there is no better option.
+- Prefer tool-provided init over package file paths when available, e.g. `eval "$(fzf --zsh)"` / `eval "$(fzf --bash)"`.
+- If path discovery is unavoidable, centralize it in a shared helper instead of duplicating it across scripts; for shell snippets, use `shell/platform.sh`.
+- Allow environment overrides for discovered locations when practical.
+- After changing shell bindings or completions, validate the final runtime behavior in Bash and/or Zsh, not just that a file exists.
 
 ### 2) Keep private and local state out of git
 - Never commit secrets, keys, tokens, cookies, auth files, or certificates.

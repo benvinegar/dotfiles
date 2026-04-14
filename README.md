@@ -56,7 +56,7 @@ See `arch/lima/README.md` for details and environment overrides.
 
 - `arch/` — Arch Linux convenience setup entrypoints for fresh VMs and installs, including `arch/lima/` for native Arch Linux ARM on Lima
 - `tmux/` — tmux config and helper scripts
-- `shell/` — shared shell snippets and aliases sourced from `~/.bashrc` / `~/.zshrc`
+- `shell/` — shared shell snippets, aliases, and portability helpers sourced from `~/.bashrc` / `~/.zshrc`
 - `zsh/` — Zsh-specific bootstrap and prompt wiring files such as `p10k.zsh` and `oh-my-zsh.zsh`
 - `oh-my-zsh-custom/` — repo-managed Oh My Zsh custom themes/plugins used by installed `~/.zshrc`
 - `eza/` — shared `eza` theme config
@@ -134,6 +134,8 @@ For unattended Arch installs, pass `--noconfirm`:
 ## Shell utilities
 
 Shared shell snippets live in `shell/` and are sourced from both Bash and Zsh via `~/.config/dotfiles/shell/init.sh`.
+`shell/platform.sh` is the shared home for cross-platform shell helpers so path discovery and fallbacks live in one place.
+Where a tool exposes its own shell init, prefer that over package-manager-specific file paths; `shell/fzf.sh` now prefers `fzf --zsh` / `fzf --bash` and only falls back to known package locations when needed.
 
 ## Zsh prompt
 
