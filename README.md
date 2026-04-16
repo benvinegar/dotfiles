@@ -191,6 +191,8 @@ This symlinks:
 - Pi themes into `~/.pi/agent/themes`
 - Pi settings into `~/.pi/agent/settings.json`
 
+Current Pi extensions include a GitHub disclosure guard that appends the required Pi/model footer to GitHub comments and `gh pr create --body ...` descriptions using the actual runtime model ID instead of LLM-generated text.
+
 Current Pi theme defaults include:
 - `theme: "tokyonight"`
 - canonical theme file: `pi/themes/tokyonight.json`

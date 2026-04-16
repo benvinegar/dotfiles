@@ -2,10 +2,12 @@
   "lastChangelogVersion": "0.66.1",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.4",
-  "defaultThinkingLevel": "xhigh",
+  "defaultThinkingLevel": "off",
   "hideThinkingBlock": false,
   "packages": [
-    "https://github.com/davebcn87/pi-autoresearch"
+    "https://github.com/davebcn87/pi-autoresearch",
+    "npm:@termdraw/pi",
+    "npm:@modemdev/glance-pi"
   ],
   "theme": "tokyonight"
 }
