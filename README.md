@@ -164,6 +164,7 @@ Current defaults:
 - `~/.local/bin`, `~/bin`, and `~/.bun/bin` are restored onto `PATH`
 - `EDITOR` / `VISUAL` default to `fresh` when the binary is installed
 - `nvm` is loaded if present so npm globals from your active nvm Node stay available
+- `ssh-agent` is reused across Bash and Zsh via `~/.ssh/agent.env`; when the agent is reachable but empty, the shared shell init tries to add your default SSH identity (and on macOS first tries Keychain restore)
 - `ls` → `eza --group-directories-first --icons=auto`
 - `l`, `la`, `ll`, and `lt` helper aliases
 - `EZA_CONFIG_DIR=$HOME/.config/eza` so Linux and macOS use the same theme path
